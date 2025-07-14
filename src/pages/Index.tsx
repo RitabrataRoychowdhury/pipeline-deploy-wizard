@@ -55,9 +55,10 @@ stages:
   - name: "Deploy"
     steps:
       - name: "clone-repo"
-        step_type: shell
+        step_type: repository
         config:
-          command: "git clone https://github.com/RitabrataRoychowdhury/RustCI.git /tmp/rustci"
+          repository_url: "https://github.com/RitabrataRoychowdhury/RustCI.git"
+          branch: "main"
       - name: "build-project"
         step_type: shell
         config:
@@ -65,7 +66,7 @@ stages:
       - name: "deploy-to-ssh"
         step_type: shell
         config:
-          command: "echo 'Deployment completed successfully'"
+          command: "scp -i ./build_context/ssh_keys/id_rsa -P 2222 /tmp/rustci/target/release/* user@localhost:/home/user/"
 environment: {}
 timeout: 3600
 retry_count: 0`;

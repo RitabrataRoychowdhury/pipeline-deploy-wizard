@@ -34,7 +34,12 @@ triggers:
 stages:
   - name: "Deploy"
     steps:
-      - name: "deploy-${name.toLowerCase().replace(/\s+/g, '-')}"
+      - name: "clone-repo"
+        step_type: repository
+        config:
+          repository_url: "${repository || 'https://github.com/RitabrataRoychowdhury/RustCI.git'}"
+          branch: "main"
+      - name: "build-${name.toLowerCase().replace(/\s+/g, '-')}"
         step_type: shell
         config:
           command: "${command}"
