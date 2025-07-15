@@ -1,6 +1,7 @@
 import { GitBranch, Settings, Plus, Activity, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
+import { ThemeToggle } from "./ThemeToggle";
 
 const Navbar = () => {
   const location = useLocation();
@@ -58,6 +59,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center space-x-3">
+          <ThemeToggle />
           <Button size="sm" className="bg-gradient-primary hover:opacity-90 shadow-primary">
             <Plus className="h-4 w-4 mr-2" />
             New Pipeline
