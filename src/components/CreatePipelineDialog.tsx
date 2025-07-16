@@ -47,14 +47,14 @@ environment: {}
 timeout: 3600
 retry_count: 0`;
 
-      const response = await fetch('http://localhost:8000/api/ci/pipelines', {
+      // Create FormData for file upload
+      const formData = new FormData();
+      const yamlBlob = new Blob([yamlContent], { type: "text/yaml" });
+      formData.append("pipeline", yamlBlob, "pipeline.yaml");
+
+      const response = await fetch('http://localhost:8000/api/ci/pipelines/upload', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          yaml_content: yamlContent
-        }),
+        body: formData,
       });
 
       if (response.ok) {

@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import PipelineCard from "@/components/PipelineCard";
 import CreatePipelineDialog from "@/components/CreatePipelineDialog";
 import StatsCard from "@/components/StatsCard";
-import { Activity, GitBranch, CheckCircle, Clock, Play, Pause, RotateCcw } from "lucide-react";
+import { Activity, GitBranch, CheckCircle, Clock, Play, Pause, RotateCcw, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -30,6 +31,7 @@ interface Pipeline {
 }
 
 const Pipelines = () => {
+  const navigate = useNavigate();
   const [pipelines, setPipelines] = useState<Pipeline[]>([
     {
       name: "RustCI Deploy",
@@ -142,7 +144,16 @@ const Pipelines = () => {
             <h1 className="text-3xl font-bold text-foreground">Pipelines</h1>
             <p className="text-muted-foreground mt-1">Manage and monitor your CI/CD pipelines</p>
           </div>
-          <CreatePipelineDialog onPipelineCreate={handlePipelineCreate} />
+          <div className="flex gap-2">
+            <Button
+              onClick={() => navigate("/pipelines/builder")}
+              variant="outline"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Visual Builder
+            </Button>
+            <CreatePipelineDialog onPipelineCreate={handlePipelineCreate} />
+          </div>
         </div>
 
         {/* Stats Overview */}

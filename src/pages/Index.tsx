@@ -71,13 +71,18 @@ environment: {}
 timeout: 3600
 retry_count: 0`;
 
-      const response = await fetch('http://localhost:8000/api/ci/pipelines', {
-        method: 'POST',
+      // For demo purposes, use a hardcoded pipeline ID
+      // In a real app, you'd store the pipeline ID when creating it
+      const pipelineId = "07566ad7-ddcb-4573-9507-9af7304de812";
+
+      // Send trigger request to backend
+      const response = await fetch(`http://localhost:8000/api/ci/pipelines/${pipelineId}/trigger`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          yaml_content: yamlContent
+          trigger_type: "manual",
         }),
       });
 

@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export function ThemeToggle() {
     return null;
   }
 
-  const isDark = theme === "dark";
+  const isDark = resolvedTheme === "dark";
 
   return (
     <div className="flex items-center space-x-2">
@@ -23,7 +23,6 @@ export function ThemeToggle() {
       <Switch
         checked={isDark}
         onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-        className="data-[state=checked]:bg-primary"
       />
       <Moon className="h-4 w-4 text-muted-foreground" />
     </div>

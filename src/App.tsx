@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Pipelines from "./pages/Pipelines";
 import Repositories from "./pages/Repositories";
 import Settings from "./pages/Settings";
+import PipelineBuilder from "./pages/PipelineBuilder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/pipelines" element={<Pipelines />} />
+            <Route path="/pipelines/builder" element={<PipelineBuilder />} />
             <Route path="/repositories" element={<Repositories />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
