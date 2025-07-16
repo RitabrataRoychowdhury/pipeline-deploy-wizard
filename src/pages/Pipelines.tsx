@@ -77,26 +77,63 @@ const Pipelines = () => {
         : p
     ));
 
-    // Simulate pipeline execution
-    setTimeout(() => {
-      const success = Math.random() > 0.3;
+    try {
+      // For demo purposes, use a hardcoded pipeline ID
+      // In a real app, you'd store the pipeline ID when creating it
+      const pipelineId = "07566ad7-ddcb-4573-9507-9af7304de812";
+
+      // Send trigger request to backend
+      const response = await fetch(`http://localhost:8000/api/ci/pipelines/${pipelineId}/trigger`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          trigger_type: "manual",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Pipeline triggered:", result);
+
+      // Simulate pipeline execution completion
+      setTimeout(() => {
+        const success = Math.random() > 0.3;
+        setPipelines(prev => prev.map(p => 
+          p.name === pipelineName 
+            ? { 
+                ...p, 
+                status: success ? "success" as const : "failed" as const,
+                lastRun: "just now",
+                totalRuns: p.totalRuns + 1
+              }
+            : p
+        ));
+
+        toast({
+          title: success ? "Pipeline Completed" : "Pipeline Failed",
+          description: `${pipelineName} ${success ? "completed successfully" : "failed during execution"}.`,
+          variant: success ? "default" : "destructive",
+        });
+      }, 3000);
+    } catch (error) {
+      console.error("Error triggering pipeline:", error);
       setPipelines(prev => prev.map(p => 
         p.name === pipelineName 
-          ? { 
-              ...p, 
-              status: success ? "success" as const : "failed" as const,
-              lastRun: "just now",
-              totalRuns: p.totalRuns + 1
-            }
+          ? { ...p, status: "failed" as const, lastRun: "just now" }
           : p
       ));
 
       toast({
-        title: success ? "Pipeline Completed" : "Pipeline Failed",
-        description: `${pipelineName} ${success ? "completed successfully" : "failed during execution"}.`,
-        variant: success ? "default" : "destructive",
+        title: "Pipeline failed",
+        description: "Failed to trigger pipeline. Please try again.",
+        variant: "destructive",
       });
-    }, 3000);
+    }
   };
 
   const handlePipelineCreate = (newPipeline: any) => {
