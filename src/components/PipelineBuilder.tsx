@@ -14,6 +14,9 @@ import {
   NodeTypes,
   ReactFlowProvider,
   useReactFlow,
+  Handle,
+  Position,
+  MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Button } from "@/components/ui/button";
@@ -117,7 +120,14 @@ const StepNode = ({ data, selected }: { data: any; selected?: boolean }) => {
   const Icon = getNodeIcon(data.stepType);
 
   return (
-    <div className={`px-4 py-3 shadow-lg rounded-lg border-2 min-w-[200px] ${getNodeColor(data.stepType)} ${selected ? 'ring-2 ring-primary' : ''}`}>
+    <div className={`px-4 py-3 shadow-lg rounded-lg border-2 min-w-[200px] relative ${getNodeColor(data.stepType)} ${selected ? 'ring-2 ring-primary' : ''}`}>
+      {/* Input Handle */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="w-3 h-3 !bg-gray-400 border-2 border-white"
+      />
+      
       <div className="flex items-center gap-2 mb-2">
         <Icon className="h-4 w-4" />
         <div className="font-bold text-sm">{data.label}</div>
@@ -128,6 +138,13 @@ const StepNode = ({ data, selected }: { data: any; selected?: boolean }) => {
           {data.command.substring(0, 40)}...
         </div>
       )}
+
+      {/* Output Handle */}
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="w-3 h-3 !bg-gray-400 border-2 border-white"
+      />
     </div>
   );
 };
@@ -145,7 +162,14 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
   const { screenToFlowPosition } = useReactFlow();
 
   const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    (params: Connection) => setEdges((eds) => addEdge({
+      ...params,
+      type: 'smoothstep',
+      animated: true,
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+      },
+    }, eds)),
     [setEdges],
   );
 
@@ -179,7 +203,27 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
         },
       };
 
-      setNodes((nds) => nds.concat(newNode));
+      setNodes((nds) => {
+        const updatedNodes = nds.concat(newNode);
+        
+        // Auto-connect to the last node if it exists
+        if (nds.length > 0) {
+          const lastNode = nds[nds.length - 1];
+          const newEdge = {
+            id: `e-${lastNode.id}-${newNode.id}`,
+            source: lastNode.id,
+            target: newNode.id,
+            type: 'smoothstep',
+            animated: true,
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+            },
+          };
+          setEdges((eds) => eds.concat(newEdge));
+        }
+        
+        return updatedNodes;
+      });
     },
     [screenToFlowPosition, setNodes],
   );
@@ -188,10 +232,13 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
   const updatePipelineFromGraph = useCallback(() => {
     if (nodes.length === 0) return;
 
+    // Sort nodes by position to maintain flow order
+    const sortedNodes = [...nodes].sort((a, b) => a.position.x - b.position.x);
+
     const newStage: Stage = {
       id: 'graph-stage',
       name: 'Graph Generated Stage',
-      steps: nodes.map(node => ({
+      steps: sortedNodes.map(node => ({
         id: node.id,
         name: node.data.label.toLowerCase().replace(/\s+/g, '-'),
         step_type: node.data.stepType,
@@ -218,13 +265,35 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
             <DraggableNode key={component.type} {...component} />
           ))}
         </div>
-        <Button 
-          onClick={updatePipelineFromGraph}
-          className="w-full mt-4"
-          variant="outline"
-        >
-          Update Pipeline
-        </Button>
+        <div className="mt-4 space-y-2">
+          <Button 
+            onClick={updatePipelineFromGraph}
+            className="w-full"
+            variant="outline"
+          >
+            Update Pipeline
+          </Button>
+          <Button 
+            onClick={() => {
+              setNodes([]);
+              setEdges([]);
+            }}
+            className="w-full"
+            variant="destructive"
+            size="sm"
+          >
+            Clear Canvas
+          </Button>
+        </div>
+        <div className="mt-4 p-3 bg-muted rounded-lg">
+          <h4 className="text-sm font-medium mb-2">Instructions:</h4>
+          <ul className="text-xs space-y-1 text-muted-foreground">
+            <li>• Drag components to canvas</li>
+            <li>• Connect nodes using handles</li>
+            <li>• Components auto-connect when dropped</li>
+            <li>• Update pipeline to save changes</li>
+          </ul>
+        </div>
       </div>
 
       {/* Graph Canvas */}
@@ -241,6 +310,13 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
           onNodeClick={(_, node) => setSelectedNode(node.id)}
           fitView
           className="bg-background"
+          defaultEdgeOptions={{
+            type: 'smoothstep',
+            animated: true,
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+            },
+          }}
         >
           <Controls />
           <MiniMap />
