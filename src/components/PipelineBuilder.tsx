@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Plus, Trash2, Move, Play, Settings, Download } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { Plus, Trash2, Move, Play, Settings, Download, GitBranch, Package, Server, Terminal, Zap, Database, Cloud } from "lucide-react";
 import {
   ReactFlow,
   MiniMap,
@@ -12,6 +12,8 @@ import {
   Edge,
   Connection,
   NodeTypes,
+  ReactFlowProvider,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Button } from "@/components/ui/button";
@@ -26,12 +28,14 @@ import { Separator } from "@/components/ui/separator";
 interface Step {
   id: string;
   name: string;
-  step_type: "shell" | "repository";
+  step_type: "shell" | "repository" | "docker" | "deploy" | "git" | "test";
   config: {
     command?: string;
     repository_url?: string;
     branch?: string;
     deployment_type?: string;
+    docker_image?: string;
+    environment?: Record<string, string>;
   };
 }
 
@@ -55,15 +59,73 @@ interface PipelineBuilderProps {
   onSave: (yaml: string) => void;
 }
 
-// Custom node component for pipeline steps
-const StepNode = ({ data }: { data: any }) => {
+// Component palette items
+const componentTypes = [
+  { type: 'git', label: 'Git Clone', icon: GitBranch, color: 'bg-green-500' },
+  { type: 'shell', label: 'Shell Command', icon: Terminal, color: 'bg-blue-500' },
+  { type: 'docker', label: 'Docker Build', icon: Package, color: 'bg-purple-500' },
+  { type: 'deploy', label: 'Deploy', icon: Server, color: 'bg-red-500' },
+  { type: 'test', label: 'Test', icon: Zap, color: 'bg-yellow-500' },
+  { type: 'database', label: 'Database', icon: Database, color: 'bg-indigo-500' },
+];
+
+// Draggable component from palette
+const DraggableNode = ({ type, label, icon: Icon, color }: any) => {
+  const onDragStart = (event: any, nodeType: string) => {
+    event.dataTransfer.setData('application/reactflow', nodeType);
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
-    <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-stone-400 min-w-[200px]">
-      <div className="font-bold text-sm">{data.label}</div>
-      <div className="text-xs text-gray-500">{data.stepType}</div>
+    <div
+      className={`${color} text-white p-3 rounded-lg cursor-grab flex items-center gap-2 hover:opacity-80 transition-opacity`}
+      onDragStart={(event) => onDragStart(event, type)}
+      draggable
+    >
+      <Icon className="h-4 w-4" />
+      <span className="text-sm font-medium">{label}</span>
+    </div>
+  );
+};
+
+// Enhanced step node for the graph
+const StepNode = ({ data, selected }: { data: any; selected?: boolean }) => {
+  const getNodeIcon = (stepType: string) => {
+    const iconMap: { [key: string]: any } = {
+      git: GitBranch,
+      shell: Terminal,
+      docker: Package,
+      deploy: Server,
+      test: Zap,
+      database: Database,
+    };
+    return iconMap[stepType] || Terminal;
+  };
+
+  const getNodeColor = (stepType: string) => {
+    const colorMap: { [key: string]: string } = {
+      git: 'border-green-500 bg-green-50',
+      shell: 'border-blue-500 bg-blue-50',
+      docker: 'border-purple-500 bg-purple-50',
+      deploy: 'border-red-500 bg-red-50',
+      test: 'border-yellow-500 bg-yellow-50',
+      database: 'border-indigo-500 bg-indigo-50',
+    };
+    return colorMap[stepType] || 'border-gray-500 bg-gray-50';
+  };
+
+  const Icon = getNodeIcon(data.stepType);
+
+  return (
+    <div className={`px-4 py-3 shadow-lg rounded-lg border-2 min-w-[200px] ${getNodeColor(data.stepType)} ${selected ? 'ring-2 ring-primary' : ''}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className="h-4 w-4" />
+        <div className="font-bold text-sm">{data.label}</div>
+      </div>
+      <div className="text-xs text-muted-foreground mb-1">{data.stepType}</div>
       {data.command && (
-        <div className="text-xs mt-1 font-mono bg-gray-100 p-1 rounded truncate">
-          {data.command.substring(0, 50)}...
+        <div className="text-xs font-mono bg-background/50 p-1 rounded truncate">
+          {data.command.substring(0, 40)}...
         </div>
       )}
     </div>
@@ -72,6 +134,121 @@ const StepNode = ({ data }: { data: any }) => {
 
 const nodeTypes: NodeTypes = {
   stepNode: StepNode,
+};
+
+// Graph builder component
+const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeline: any }) => {
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const reactFlowWrapper = useRef(null);
+  const { screenToFlowPosition } = useReactFlow();
+
+  const onConnect = useCallback(
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges],
+  );
+
+  const onDragOver = useCallback((event: any) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event: any) => {
+      event.preventDefault();
+
+      const type = event.dataTransfer.getData('application/reactflow');
+      if (typeof type === 'undefined' || !type) {
+        return;
+      }
+
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      const newNode = {
+        id: `${type}-${Date.now()}`,
+        type: 'stepNode',
+        position,
+        data: { 
+          label: `New ${type} step`, 
+          stepType: type,
+          command: type === 'shell' ? 'echo "Hello World"' : ''
+        },
+      };
+
+      setNodes((nds) => nds.concat(newNode));
+    },
+    [screenToFlowPosition, setNodes],
+  );
+
+  // Convert nodes back to pipeline
+  const updatePipelineFromGraph = useCallback(() => {
+    if (nodes.length === 0) return;
+
+    const newStage: Stage = {
+      id: 'graph-stage',
+      name: 'Graph Generated Stage',
+      steps: nodes.map(node => ({
+        id: node.id,
+        name: node.data.label.toLowerCase().replace(/\s+/g, '-'),
+        step_type: node.data.stepType,
+        config: {
+          command: node.data.command || '',
+          deployment_type: node.data.stepType === 'deploy' ? 'custom' : undefined,
+        }
+      }))
+    };
+
+    setPipeline((prev: Pipeline) => ({
+      ...prev,
+      stages: [newStage]
+    }));
+  }, [nodes, setPipeline]);
+
+  return (
+    <div className="flex h-[600px] gap-4">
+      {/* Component Palette */}
+      <div className="w-64 border-r pr-4">
+        <h3 className="font-semibold mb-4">Components</h3>
+        <div className="space-y-3">
+          {componentTypes.map((component) => (
+            <DraggableNode key={component.type} {...component} />
+          ))}
+        </div>
+        <Button 
+          onClick={updatePipelineFromGraph}
+          className="w-full mt-4"
+          variant="outline"
+        >
+          Update Pipeline
+        </Button>
+      </div>
+
+      {/* Graph Canvas */}
+      <div className="flex-1" ref={reactFlowWrapper}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          nodeTypes={nodeTypes}
+          onNodeClick={(_, node) => setSelectedNode(node.id)}
+          fitView
+          className="bg-background"
+        >
+          <Controls />
+          <MiniMap />
+          <Background gap={20} />
+        </ReactFlow>
+      </div>
+    </div>
+  );
 };
 
 export function PipelineBuilder({ onSave }: PipelineBuilderProps) {
@@ -88,51 +265,6 @@ export function PipelineBuilder({ onSave }: PipelineBuilderProps) {
   const [envKey, setEnvKey] = useState("");
   const [envValue, setEnvValue] = useState("");
   const [viewMode, setViewMode] = useState<"visual" | "yaml" | "graph">("visual");
-  
-  // React Flow state
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
-  );
-
-  // Convert pipeline to graph nodes
-  const updateGraphFromPipeline = useCallback(() => {
-    const newNodes: Node[] = [];
-    const newEdges: Edge[] = [];
-    let yPosition = 100;
-
-    pipeline.stages.forEach((stage, stageIndex) => {
-      stage.steps.forEach((step, stepIndex) => {
-        const nodeId = `${stageIndex}-${stepIndex}`;
-        newNodes.push({
-          id: nodeId,
-          type: 'stepNode',
-          position: { x: stepIndex * 250, y: yPosition },
-          data: {
-            label: step.name,
-            stepType: step.step_type,
-            command: step.config.command,
-          },
-        });
-
-        // Connect to previous step
-        if (stepIndex > 0) {
-          newEdges.push({
-            id: `e${stageIndex}-${stepIndex - 1}-${nodeId}`,
-            source: `${stageIndex}-${stepIndex - 1}`,
-            target: nodeId,
-          });
-        }
-      });
-      yPosition += 150;
-    });
-
-    setNodes(newNodes);
-    setEdges(newEdges);
-  }, [pipeline, setNodes, setEdges]);
 
   const addStage = () => {
     const newStage: Stage = {
@@ -293,12 +425,9 @@ retry_count: ${pipeline.retry_count}`;
               </Button>
               <Button
                 variant={viewMode === "graph" ? "default" : "outline"}
-                onClick={() => {
-                  setViewMode("graph");
-                  updateGraphFromPipeline();
-                }}
+                onClick={() => setViewMode("graph")}
               >
-                Graph View
+                Graph Builder
               </Button>
               <Button
                 variant={viewMode === "yaml" ? "default" : "outline"}
@@ -312,24 +441,17 @@ retry_count: ${pipeline.retry_count}`;
       </Card>
 
       {viewMode === "graph" && (
-        <Card className="h-[600px]">
+        <Card>
           <CardHeader>
-            <CardTitle>Pipeline Flow</CardTitle>
+            <CardTitle>Visual Pipeline Builder</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Drag components from the left panel to build your pipeline
+            </p>
           </CardHeader>
-          <CardContent className="h-[500px]">
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              nodeTypes={nodeTypes}
-              fitView
-            >
-              <Controls />
-              <MiniMap />
-              <Background gap={12} />
-            </ReactFlow>
+          <CardContent>
+            <ReactFlowProvider>
+              <GraphBuilder pipeline={pipeline} setPipeline={setPipeline} />
+            </ReactFlowProvider>
           </CardContent>
         </Card>
       )}
@@ -515,6 +637,10 @@ retry_count: ${pipeline.retry_count}`;
                                 <SelectContent>
                                   <SelectItem value="shell">Shell Command</SelectItem>
                                   <SelectItem value="repository">Repository</SelectItem>
+                                  <SelectItem value="docker">Docker Build</SelectItem>
+                                  <SelectItem value="deploy">Deploy</SelectItem>
+                                  <SelectItem value="git">Git Clone</SelectItem>
+                                  <SelectItem value="test">Test</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
