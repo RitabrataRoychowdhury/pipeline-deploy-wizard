@@ -1,5 +1,19 @@
-import { useState } from "react";
-import { Plus, Trash2, Move, Play, Settings } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Plus, Trash2, Move, Play, Settings, Download } from "lucide-react";
+import {
+  ReactFlow,
+  MiniMap,
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  Node,
+  Edge,
+  Connection,
+  NodeTypes,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,11 +48,31 @@ interface Pipeline {
   environment: Record<string, string>;
   timeout: number;
   retry_count: number;
+  triggers: Array<{ trigger_type: string; config: any }>;
 }
 
 interface PipelineBuilderProps {
   onSave: (yaml: string) => void;
 }
+
+// Custom node component for pipeline steps
+const StepNode = ({ data }: { data: any }) => {
+  return (
+    <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-stone-400 min-w-[200px]">
+      <div className="font-bold text-sm">{data.label}</div>
+      <div className="text-xs text-gray-500">{data.stepType}</div>
+      {data.command && (
+        <div className="text-xs mt-1 font-mono bg-gray-100 p-1 rounded truncate">
+          {data.command.substring(0, 50)}...
+        </div>
+      )}
+    </div>
+  );
+};
+
+const nodeTypes: NodeTypes = {
+  stepNode: StepNode,
+};
 
 export function PipelineBuilder({ onSave }: PipelineBuilderProps) {
   const [pipeline, setPipeline] = useState<Pipeline>({
@@ -48,10 +82,57 @@ export function PipelineBuilder({ onSave }: PipelineBuilderProps) {
     environment: {},
     timeout: 3600,
     retry_count: 0,
+    triggers: [{ trigger_type: "manual", config: {} }],
   });
 
   const [envKey, setEnvKey] = useState("");
   const [envValue, setEnvValue] = useState("");
+  const [viewMode, setViewMode] = useState<"visual" | "yaml" | "graph">("visual");
+  
+  // React Flow state
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  const onConnect = useCallback(
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges],
+  );
+
+  // Convert pipeline to graph nodes
+  const updateGraphFromPipeline = useCallback(() => {
+    const newNodes: Node[] = [];
+    const newEdges: Edge[] = [];
+    let yPosition = 100;
+
+    pipeline.stages.forEach((stage, stageIndex) => {
+      stage.steps.forEach((step, stepIndex) => {
+        const nodeId = `${stageIndex}-${stepIndex}`;
+        newNodes.push({
+          id: nodeId,
+          type: 'stepNode',
+          position: { x: stepIndex * 250, y: yPosition },
+          data: {
+            label: step.name,
+            stepType: step.step_type,
+            command: step.config.command,
+          },
+        });
+
+        // Connect to previous step
+        if (stepIndex > 0) {
+          newEdges.push({
+            id: `e${stageIndex}-${stepIndex - 1}-${nodeId}`,
+            source: `${stageIndex}-${stepIndex - 1}`,
+            target: nodeId,
+          });
+        }
+      });
+      yPosition += 150;
+    });
+
+    setNodes(newNodes);
+    setEdges(newEdges);
+  }, [pipeline, setNodes, setEdges]);
 
   const addStage = () => {
     const newStage: Stage = {
@@ -154,8 +235,8 @@ export function PipelineBuilder({ onSave }: PipelineBuilderProps) {
 description: "${pipeline.description}"
 
 triggers:
-  - trigger_type: manual
-    config: {}
+${pipeline.triggers.map(trigger => `  - trigger_type: ${trigger.trigger_type}
+    config: {}`).join('\n')}
 
 stages:
 ${pipeline.stages.map(stage => `  - name: "${stage.name}"
@@ -198,7 +279,77 @@ retry_count: ${pipeline.retry_count}`;
 
   return (
     <div className="space-y-6">
-      {/* Pipeline Info */}
+      {/* View Mode Toggle */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Pipeline Builder</CardTitle>
+            <div className="flex gap-2">
+              <Button
+                variant={viewMode === "visual" ? "default" : "outline"}
+                onClick={() => setViewMode("visual")}
+              >
+                Visual Editor
+              </Button>
+              <Button
+                variant={viewMode === "graph" ? "default" : "outline"}
+                onClick={() => {
+                  setViewMode("graph");
+                  updateGraphFromPipeline();
+                }}
+              >
+                Graph View
+              </Button>
+              <Button
+                variant={viewMode === "yaml" ? "default" : "outline"}
+                onClick={() => setViewMode("yaml")}
+              >
+                YAML View
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {viewMode === "graph" && (
+        <Card className="h-[600px]">
+          <CardHeader>
+            <CardTitle>Pipeline Flow</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[500px]">
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              nodeTypes={nodeTypes}
+              fitView
+            >
+              <Controls />
+              <MiniMap />
+              <Background gap={12} />
+            </ReactFlow>
+          </CardContent>
+        </Card>
+      )}
+
+      {viewMode === "yaml" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Generated YAML</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto whitespace-pre-wrap">
+              {generateYAML()}
+            </pre>
+          </CardContent>
+        </Card>
+      )}
+
+      {viewMode === "visual" && (
+        <div className="space-y-6">
+          {/* Pipeline Info */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -445,11 +596,13 @@ retry_count: ${pipeline.retry_count}`;
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button onClick={handleSave} className="min-w-32">
-          Save Pipeline
-        </Button>
-      </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} className="min-w-32">
+              Save Pipeline
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

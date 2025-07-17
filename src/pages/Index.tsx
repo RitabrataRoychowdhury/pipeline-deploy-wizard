@@ -176,7 +176,9 @@ retry_count: 0`;
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-foreground">Pipelines</h2>
-              <CreatePipelineDialog onPipelineCreate={handlePipelineCreate} />
+              <div className="flex gap-2">
+                <CreatePipelineDialog onPipelineCreate={handlePipelineCreate} />
+              </div>
             </div>
             
             <div className="grid gap-4">
