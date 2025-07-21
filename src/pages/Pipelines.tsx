@@ -185,6 +185,7 @@ const Pipelines = () => {
             <Button
               onClick={() => navigate("/pipelines/builder")}
               variant="outline"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
             >
               <Plus className="h-4 w-4 mr-2" />
               Visual Builder

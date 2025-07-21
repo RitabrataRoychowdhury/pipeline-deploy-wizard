@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Plus, Trash2, Move, Play, Settings, Download, GitBranch, Package, Server, Terminal, Zap, Database, Cloud } from "lucide-react";
+import { Plus, Trash2, Move, Play, Settings, Download, GitBranch, Package, Server, Terminal, Zap, Database, Cloud, Webhook, Clock, MonitorSpeaker } from "lucide-react";
 import {
   ReactFlow,
   MiniMap,
@@ -36,8 +36,17 @@ interface Step {
     command?: string;
     repository_url?: string;
     branch?: string;
-    deployment_type?: string;
+    deployment_type?: "local" | "docker" | "ssh" | "kubernetes" | "custom";
     docker_image?: string;
+    docker_tag?: string;
+    ssh_host?: string;
+    ssh_port?: number;
+    ssh_user?: string;
+    ssh_password?: string;
+    test_framework?: "cargo" | "npm" | "pytest" | "junit" | "custom";
+    test_command?: string;
+    database_url?: string;
+    migration_command?: string;
     environment?: Record<string, string>;
   };
 }
@@ -48,6 +57,16 @@ interface Stage {
   steps: Step[];
 }
 
+interface TriggerConfig {
+  trigger_type: "manual" | "webhook" | "schedule";
+  config: {
+    webhook_url?: string;
+    secret?: string;
+    schedule?: string; // cron expression
+    branch?: string;
+  };
+}
+
 interface Pipeline {
   name: string;
   description: string;
@@ -55,7 +74,7 @@ interface Pipeline {
   environment: Record<string, string>;
   timeout: number;
   retry_count: number;
-  triggers: Array<{ trigger_type: string; config: any }>;
+  triggers: TriggerConfig[];
 }
 
 interface PipelineBuilderProps {
@@ -64,12 +83,12 @@ interface PipelineBuilderProps {
 
 // Component palette items
 const componentTypes = [
-  { type: 'git', label: 'Git Clone', icon: GitBranch, color: 'bg-green-500' },
-  { type: 'shell', label: 'Shell Command', icon: Terminal, color: 'bg-blue-500' },
-  { type: 'docker', label: 'Docker Build', icon: Package, color: 'bg-purple-500' },
-  { type: 'deploy', label: 'Deploy', icon: Server, color: 'bg-red-500' },
-  { type: 'test', label: 'Test', icon: Zap, color: 'bg-yellow-500' },
-  { type: 'database', label: 'Database', icon: Database, color: 'bg-indigo-500' },
+  { type: 'git', label: 'Git Clone', icon: GitBranch, color: 'bg-green-500', description: 'Clone repository from Git' },
+  { type: 'shell', label: 'Shell Command', icon: Terminal, color: 'bg-blue-500', description: 'Execute shell commands' },
+  { type: 'docker', label: 'Docker Build', icon: Package, color: 'bg-purple-500', description: 'Build and manage Docker images' },
+  { type: 'deploy', label: 'Deploy', icon: Server, color: 'bg-red-500', description: 'Deploy to various targets' },
+  { type: 'test', label: 'Test', icon: Zap, color: 'bg-yellow-500', description: 'Run automated tests' },
+  { type: 'database', label: 'Database', icon: Database, color: 'bg-indigo-500', description: 'Database operations & migrations' },
 ];
 
 // Draggable component from palette
@@ -81,12 +100,16 @@ const DraggableNode = ({ type, label, icon: Icon, color }: any) => {
 
   return (
     <div
-      className={`${color} text-white p-3 rounded-lg cursor-grab flex items-center gap-2 hover:opacity-80 transition-opacity`}
+      className={`${color} text-white p-3 rounded-lg cursor-grab hover:opacity-80 transition-opacity shadow-md`}
       onDragStart={(event) => onDragStart(event, type)}
       draggable
+      title={`Drag to add ${label}`}
     >
-      <Icon className="h-4 w-4" />
-      <span className="text-sm font-medium">{label}</span>
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className="h-4 w-4" />
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <div className="text-xs opacity-80">{componentTypes.find(c => c.type === type)?.description}</div>
     </div>
   );
 };
@@ -600,10 +623,125 @@ retry_count: ${pipeline.retry_count}`;
         </CardContent>
       </Card>
 
+      {/* Triggers */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Webhook className="h-5 w-5" />
+            Pipeline Triggers
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {pipeline.triggers.map((trigger, index) => (
+            <div key={index} className="border rounded-lg p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Trigger {index + 1}</Badge>
+                  <Select
+                    value={trigger.trigger_type}
+                    onValueChange={(value: "manual" | "webhook" | "schedule") => {
+                      const newTriggers = [...pipeline.triggers];
+                      newTriggers[index] = { ...trigger, trigger_type: value, config: {} };
+                      setPipeline(prev => ({ ...prev, triggers: newTriggers }));
+                    }}
+                  >
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="manual">Manual</SelectItem>
+                      <SelectItem value="webhook">Webhook</SelectItem>
+                      <SelectItem value="schedule">Schedule</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {pipeline.triggers.length > 1 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const newTriggers = pipeline.triggers.filter((_, i) => i !== index);
+                      setPipeline(prev => ({ ...prev, triggers: newTriggers }));
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              
+              {trigger.trigger_type === "webhook" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Webhook URL</Label>
+                    <Input
+                      value={trigger.config.webhook_url || ""}
+                      onChange={(e) => {
+                        const newTriggers = [...pipeline.triggers];
+                        newTriggers[index].config.webhook_url = e.target.value;
+                        setPipeline(prev => ({ ...prev, triggers: newTriggers }));
+                      }}
+                      placeholder="https://api.github.com/repos/user/repo"
+                    />
+                  </div>
+                  <div>
+                    <Label>Secret (optional)</Label>
+                    <Input
+                      type="password"
+                      value={trigger.config.secret || ""}
+                      onChange={(e) => {
+                        const newTriggers = [...pipeline.triggers];
+                        newTriggers[index].config.secret = e.target.value;
+                        setPipeline(prev => ({ ...prev, triggers: newTriggers }));
+                      }}
+                      placeholder="webhook secret"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {trigger.trigger_type === "schedule" && (
+                <div>
+                  <Label>Cron Expression</Label>
+                  <Input
+                    value={trigger.config.schedule || ""}
+                    onChange={(e) => {
+                      const newTriggers = [...pipeline.triggers];
+                      newTriggers[index].config.schedule = e.target.value;
+                      setPipeline(prev => ({ ...prev, triggers: newTriggers }));
+                    }}
+                    placeholder="0 0 * * *"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Example: "0 0 * * *" runs daily at midnight
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+          
+          <Button
+            variant="outline"
+            onClick={() => {
+              setPipeline(prev => ({
+                ...prev,
+                triggers: [...prev.triggers, { trigger_type: "manual", config: {} }]
+              }));
+            }}
+            className="w-full"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Trigger
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Environment Variables */}
       <Card>
         <CardHeader>
-          <CardTitle>Environment Variables</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <MonitorSpeaker className="h-5 w-5" />
+            Environment Variables
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
@@ -735,6 +873,10 @@ retry_count: ${pipeline.retry_count}`;
                                   </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="">Auto-detect</SelectItem>
+                                    <SelectItem value="local">Local</SelectItem>
+                                    <SelectItem value="docker">Docker</SelectItem>
+                                    <SelectItem value="ssh">SSH</SelectItem>
+                                    <SelectItem value="kubernetes">Kubernetes</SelectItem>
                                     <SelectItem value="custom">Custom</SelectItem>
                                   </SelectContent>
                                 </Select>
@@ -752,6 +894,156 @@ retry_count: ${pipeline.retry_count}`;
                           )}
 
                           {step.step_type === "repository" && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label>Repository URL</Label>
+                                <Input
+                                  value={step.config.repository_url || ""}
+                                  onChange={(e) => updateStep(stage.id, step.id, 'config.repository_url', e.target.value)}
+                                  placeholder="https://github.com/user/repo.git"
+                                />
+                              </div>
+                              <div>
+                                <Label>Branch</Label>
+                                <Input
+                                  value={step.config.branch || "main"}
+                                  onChange={(e) => updateStep(stage.id, step.id, 'config.branch', e.target.value)}
+                                  placeholder="main"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {step.step_type === "docker" && (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <Label>Docker Image</Label>
+                                  <Input
+                                    value={step.config.docker_image || ""}
+                                    onChange={(e) => updateStep(stage.id, step.id, 'config.docker_image', e.target.value)}
+                                    placeholder="rust:latest"
+                                  />
+                                </div>
+                                <div>
+                                  <Label>Tag</Label>
+                                  <Input
+                                    value={step.config.docker_tag || ""}
+                                    onChange={(e) => updateStep(stage.id, step.id, 'config.docker_tag', e.target.value)}
+                                    placeholder="latest"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <Label>Build Command</Label>
+                                <Textarea
+                                  value={step.config.command || ""}
+                                  onChange={(e) => updateStep(stage.id, step.id, 'config.command', e.target.value)}
+                                  placeholder="docker build -t my-app:latest ."
+                                  rows={3}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {step.step_type === "deploy" && (
+                            <div className="space-y-4">
+                              <div>
+                                <Label>Deployment Type</Label>
+                                <Select
+                                  value={step.config.deployment_type || "local"}
+                                  onValueChange={(value) => updateStep(stage.id, step.id, 'config.deployment_type', value)}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="local">Local</SelectItem>
+                                    <SelectItem value="docker">Docker</SelectItem>
+                                    <SelectItem value="ssh">SSH</SelectItem>
+                                    <SelectItem value="kubernetes">Kubernetes</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              
+                              {step.config.deployment_type === "ssh" && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <Label>SSH Host</Label>
+                                    <Input
+                                      value={step.config.ssh_host || ""}
+                                      onChange={(e) => updateStep(stage.id, step.id, 'config.ssh_host', e.target.value)}
+                                      placeholder="localhost"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label>SSH Port</Label>
+                                    <Input
+                                      type="number"
+                                      value={step.config.ssh_port || ""}
+                                      onChange={(e) => updateStep(stage.id, step.id, 'config.ssh_port', parseInt(e.target.value) || 22)}
+                                      placeholder="22"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label>SSH User</Label>
+                                    <Input
+                                      value={step.config.ssh_user || ""}
+                                      onChange={(e) => updateStep(stage.id, step.id, 'config.ssh_user', e.target.value)}
+                                      placeholder="user"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div>
+                                <Label>Deploy Command</Label>
+                                <Textarea
+                                  value={step.config.command || ""}
+                                  onChange={(e) => updateStep(stage.id, step.id, 'config.command', e.target.value)}
+                                  placeholder="docker run -d --name app -p 8000:8000 my-app:latest"
+                                  rows={3}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {step.step_type === "test" && (
+                            <div className="space-y-4">
+                              <div>
+                                <Label>Test Framework</Label>
+                                <Select
+                                  value={step.config.test_framework || "custom"}
+                                  onValueChange={(value) => updateStep(stage.id, step.id, 'config.test_framework', value)}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="cargo">Cargo (Rust)</SelectItem>
+                                    <SelectItem value="npm">NPM (Node.js)</SelectItem>
+                                    <SelectItem value="pytest">PyTest (Python)</SelectItem>
+                                    <SelectItem value="junit">JUnit (Java)</SelectItem>
+                                    <SelectItem value="custom">Custom</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label>Test Command</Label>
+                                <Textarea
+                                  value={step.config.test_command || step.config.command || ""}
+                                  onChange={(e) => {
+                                    updateStep(stage.id, step.id, 'config.test_command', e.target.value);
+                                    updateStep(stage.id, step.id, 'config.command', e.target.value);
+                                  }}
+                                  placeholder="cargo test --all"
+                                  rows={3}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {step.step_type === "git" && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
                                 <Label>Repository URL</Label>

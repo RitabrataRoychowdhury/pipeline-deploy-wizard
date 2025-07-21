@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import PipelineCard from "@/components/PipelineCard";
-import CreatePipelineDialog from "@/components/CreatePipelineDialog";
 import StatsCard from "@/components/StatsCard";
 import RecentBuilds from "@/components/RecentBuilds";
-import { Activity, GitBranch, CheckCircle, Clock } from "lucide-react";
+import { Activity, GitBranch, CheckCircle, Clock, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 interface Pipeline {
@@ -17,6 +18,7 @@ interface Pipeline {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const [pipelines, setPipelines] = useState<Pipeline[]>([
     {
       name: "RustCI Deploy",
@@ -121,9 +123,6 @@ retry_count: 0`;
     }
   };
 
-  const handlePipelineCreate = (newPipeline: any) => {
-    setPipelines(prev => [...prev, newPipeline]);
-  };
 
   const stats = {
     totalPipelines: pipelines.length,
@@ -177,7 +176,13 @@ retry_count: 0`;
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-foreground">Pipelines</h2>
               <div className="flex gap-2">
-                <CreatePipelineDialog onPipelineCreate={handlePipelineCreate} />
+                <Button
+                  onClick={() => navigate("/pipelines")}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  View Pipelines
+                </Button>
               </div>
             </div>
             
