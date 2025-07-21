@@ -1,5 +1,10 @@
 import { useState, useCallback, useRef } from "react";
-import { Plus, Trash2, Move, Play, Settings, Download, GitBranch, Package, Server, Terminal, Zap, Database, Cloud, Webhook, Clock, MonitorSpeaker } from "lucide-react";
+import { 
+  Plus, Trash2, Move, Play, Settings, Download, GitBranch, Package, Server, Terminal, Zap, Database, 
+  Cloud, Webhook, Clock, MonitorSpeaker, Code, FileText, Shield, Cpu, Network, HardDrive,
+  Container, Globe, Lock, TestTube, Wrench, Layers, Archive, CheckCircle, AlertCircle,
+  ChevronDown, FolderOpen, Boxes, Rocket
+} from "lucide-react";
 import {
   ReactFlow,
   MiniMap,
@@ -81,18 +86,85 @@ interface PipelineBuilderProps {
   onSave: (yaml: string) => void;
 }
 
-// Component palette items
-const componentTypes = [
-  { type: 'git', label: 'Git Clone', icon: GitBranch, color: 'bg-green-500', description: 'Clone repository from Git' },
-  { type: 'shell', label: 'Shell Command', icon: Terminal, color: 'bg-blue-500', description: 'Execute shell commands' },
-  { type: 'docker', label: 'Docker Build', icon: Package, color: 'bg-purple-500', description: 'Build and manage Docker images' },
-  { type: 'deploy', label: 'Deploy', icon: Server, color: 'bg-red-500', description: 'Deploy to various targets' },
-  { type: 'test', label: 'Test', icon: Zap, color: 'bg-yellow-500', description: 'Run automated tests' },
-  { type: 'database', label: 'Database', icon: Database, color: 'bg-indigo-500', description: 'Database operations & migrations' },
-];
+// Enhanced component categories with submodules
+const componentCategories = {
+  "Source Control": {
+    icon: GitBranch,
+    color: "bg-emerald-500",
+    components: [
+      { type: 'git-clone', label: 'Git Clone', icon: GitBranch, description: 'Clone repository from Git' },
+      { type: 'git-pull', label: 'Git Pull', icon: Download, description: 'Pull latest changes' },
+      { type: 'git-checkout', label: 'Git Checkout', icon: Code, description: 'Switch branches or commits' },
+      { type: 'github-release', label: 'GitHub Release', icon: Archive, description: 'Create GitHub releases' },
+    ]
+  },
+  "Build & Compile": {
+    icon: Wrench,
+    color: "bg-blue-500",
+    components: [
+      { type: 'shell-command', label: 'Shell Command', icon: Terminal, description: 'Execute shell commands' },
+      { type: 'rust-build', label: 'Rust Build', icon: Package, description: 'Build Rust projects with Cargo' },
+      { type: 'node-build', label: 'Node.js Build', icon: Globe, description: 'Build Node.js applications' },
+      { type: 'python-build', label: 'Python Build', icon: Code, description: 'Build Python applications' },
+      { type: 'maven-build', label: 'Maven Build', icon: Layers, description: 'Build Java projects with Maven' },
+    ]
+  },
+  "Testing": {
+    icon: TestTube,
+    color: "bg-yellow-500",
+    components: [
+      { type: 'unit-tests', label: 'Unit Tests', icon: CheckCircle, description: 'Run unit tests' },
+      { type: 'integration-tests', label: 'Integration Tests', icon: Network, description: 'Run integration tests' },
+      { type: 'security-scan', label: 'Security Scan', icon: Shield, description: 'Security vulnerability scanning' },
+      { type: 'performance-test', label: 'Performance Test', icon: Cpu, description: 'Load and performance testing' },
+      { type: 'code-quality', label: 'Code Quality', icon: FileText, description: 'Code quality analysis' },
+    ]
+  },
+  "Containerization": {
+    icon: Container,
+    color: "bg-purple-500",
+    components: [
+      { type: 'docker-build', label: 'Docker Build', icon: Package, description: 'Build Docker images' },
+      { type: 'docker-push', label: 'Docker Push', icon: Cloud, description: 'Push images to registry' },
+      { type: 'docker-scan', label: 'Docker Scan', icon: Shield, description: 'Scan for vulnerabilities' },
+      { type: 'docker-compose', label: 'Docker Compose', icon: Layers, description: 'Multi-container deployment' },
+    ]
+  },
+  "Deployment": {
+    icon: Rocket,
+    color: "bg-red-500",
+    components: [
+      { type: 'deploy-local', label: 'Local Deploy', icon: HardDrive, description: 'Deploy to local server' },
+      { type: 'deploy-ssh', label: 'SSH Deploy', icon: Server, description: 'Deploy via SSH' },
+      { type: 'deploy-k8s', label: 'Kubernetes Deploy', icon: Boxes, description: 'Deploy to Kubernetes' },
+      { type: 'deploy-cloud', label: 'Cloud Deploy', icon: Cloud, description: 'Deploy to cloud platforms' },
+      { type: 'deploy-docker', label: 'Docker Deploy', icon: Container, description: 'Deploy Docker containers' },
+    ]
+  },
+  "Database": {
+    icon: Database,
+    color: "bg-indigo-500",
+    components: [
+      { type: 'db-migrate', label: 'DB Migration', icon: Database, description: 'Run database migrations' },
+      { type: 'db-backup', label: 'DB Backup', icon: Archive, description: 'Backup database' },
+      { type: 'db-seed', label: 'DB Seed', icon: Package, description: 'Seed database with data' },
+      { type: 'db-health', label: 'DB Health Check', icon: CheckCircle, description: 'Check database health' },
+    ]
+  },
+  "Monitoring": {
+    icon: MonitorSpeaker,
+    color: "bg-teal-500",
+    components: [
+      { type: 'health-check', label: 'Health Check', icon: CheckCircle, description: 'Application health check' },
+      { type: 'smoke-test', label: 'Smoke Test', icon: AlertCircle, description: 'Basic functionality test' },
+      { type: 'monitoring-setup', label: 'Setup Monitoring', icon: MonitorSpeaker, description: 'Configure monitoring' },
+      { type: 'log-analysis', label: 'Log Analysis', icon: FileText, description: 'Analyze application logs' },
+    ]
+  }
+};
 
-// Draggable component from palette
-const DraggableNode = ({ type, label, icon: Icon, color }: any) => {
+// Draggable component from palette with enhanced styling
+const DraggableNode = ({ type, label, icon: Icon, description, color }: any) => {
   const onDragStart = (event: any, nodeType: string) => {
     event.dataTransfer.setData('application/reactflow', nodeType);
     event.dataTransfer.effectAllowed = 'move';
@@ -100,24 +172,103 @@ const DraggableNode = ({ type, label, icon: Icon, color }: any) => {
 
   return (
     <div
-      className={`${color} text-white p-3 rounded-lg cursor-grab hover:opacity-80 transition-opacity shadow-md`}
+      className={`group relative overflow-hidden rounded-xl border-2 border-transparent 
+        bg-gradient-to-br ${color} to-opacity-80 
+        text-white p-4 cursor-grab hover:scale-105 
+        transition-all duration-200 shadow-lg hover:shadow-xl
+        hover:border-white/30 backdrop-blur-sm`}
       onDragStart={(event) => onDragStart(event, type)}
       draggable
       title={`Drag to add ${label}`}
     >
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="h-4 w-4" />
-        <span className="text-sm font-medium">{label}</span>
+      <div className="flex items-center gap-3 mb-2">
+        <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <div className="font-semibold text-sm leading-tight">{label}</div>
+        </div>
       </div>
-      <div className="text-xs opacity-80">{componentTypes.find(c => c.type === type)?.description}</div>
+      <div className="text-xs opacity-90 leading-tight">{description}</div>
+      
+      {/* Drag indicator */}
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-60 transition-opacity">
+        <Move className="h-3 w-3" />
+      </div>
     </div>
   );
 };
 
-// Enhanced step node for the graph
+// Enhanced category dropdown component
+const CategoryDropdown = ({ category, data, isOpen, onToggle }: any) => {
+  const { icon: CategoryIcon, color, components } = data;
+
+  return (
+    <div className="mb-4">
+      <button
+        onClick={onToggle}
+        className={`w-full flex items-center justify-between p-3 rounded-lg border-2 
+          ${isOpen ? 'border-primary bg-primary/10' : 'border-border bg-card hover:bg-muted/50'}
+          transition-all duration-200`}
+      >
+        <div className="flex items-center gap-2">
+          <div className={`p-1.5 ${color} rounded-md`}>
+            <CategoryIcon className="h-4 w-4 text-white" />
+          </div>
+          <span className="font-medium text-sm">{category}</span>
+          <span className="text-xs text-muted-foreground">({components.length})</span>
+        </div>
+        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <div className="mt-2 space-y-2 pl-4">
+          {components.map((component: any) => (
+            <DraggableNode key={component.type} {...component} color={color} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Enhanced step node for the graph with better styling
 const StepNode = ({ data, selected }: { data: any; selected?: boolean }) => {
   const getNodeIcon = (stepType: string) => {
+    // Map step types to their appropriate icons
     const iconMap: { [key: string]: any } = {
+      'git-clone': GitBranch,
+      'git-pull': Download,
+      'git-checkout': Code,
+      'github-release': Archive,
+      'shell-command': Terminal,
+      'rust-build': Package,
+      'node-build': Globe,
+      'python-build': Code,
+      'maven-build': Layers,
+      'unit-tests': CheckCircle,
+      'integration-tests': Network,
+      'security-scan': Shield,
+      'performance-test': Cpu,
+      'code-quality': FileText,
+      'docker-build': Package,
+      'docker-push': Cloud,
+      'docker-scan': Shield,
+      'docker-compose': Layers,
+      'deploy-local': HardDrive,
+      'deploy-ssh': Server,
+      'deploy-k8s': Boxes,
+      'deploy-cloud': Cloud,
+      'deploy-docker': Container,
+      'db-migrate': Database,
+      'db-backup': Archive,
+      'db-seed': Package,
+      'db-health': CheckCircle,
+      'health-check': CheckCircle,
+      'smoke-test': AlertCircle,
+      'monitoring-setup': MonitorSpeaker,
+      'log-analysis': FileText,
+      // Legacy mappings
       git: GitBranch,
       shell: Terminal,
       docker: Package,
@@ -129,45 +280,91 @@ const StepNode = ({ data, selected }: { data: any; selected?: boolean }) => {
   };
 
   const getNodeColor = (stepType: string) => {
-    const colorMap: { [key: string]: string } = {
-      git: 'border-green-500 bg-green-50',
-      shell: 'border-blue-500 bg-blue-50',
-      docker: 'border-purple-500 bg-purple-50',
-      deploy: 'border-red-500 bg-red-50',
-      test: 'border-yellow-500 bg-yellow-50',
-      database: 'border-indigo-500 bg-indigo-50',
+    // Find the category this step belongs to
+    for (const [categoryName, categoryData] of Object.entries(componentCategories)) {
+      const component = categoryData.components.find(c => c.type === stepType);
+      if (component) {
+        const colorClass = categoryData.color.replace('bg-', '');
+        return {
+          border: `border-${colorClass}`,
+          bg: `bg-${colorClass}/10`,
+          iconBg: categoryData.color,
+        };
+      }
+    }
+    
+    // Legacy color mappings
+    const colorMap: { [key: string]: any } = {
+      git: { border: 'border-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-950/20', iconBg: 'bg-emerald-500' },
+      shell: { border: 'border-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/20', iconBg: 'bg-blue-500' },
+      docker: { border: 'border-purple-500', bg: 'bg-purple-50 dark:bg-purple-950/20', iconBg: 'bg-purple-500' },
+      deploy: { border: 'border-red-500', bg: 'bg-red-50 dark:bg-red-950/20', iconBg: 'bg-red-500' },
+      test: { border: 'border-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-950/20', iconBg: 'bg-yellow-500' },
+      database: { border: 'border-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-950/20', iconBg: 'bg-indigo-500' },
     };
-    return colorMap[stepType] || 'border-gray-500 bg-gray-50';
+    return colorMap[stepType] || { border: 'border-gray-500', bg: 'bg-gray-50 dark:bg-gray-950/20', iconBg: 'bg-gray-500' };
   };
 
   const Icon = getNodeIcon(data.stepType);
+  const colors = getNodeColor(data.stepType);
 
   return (
-    <div className={`px-4 py-3 shadow-lg rounded-lg border-2 min-w-[200px] relative ${getNodeColor(data.stepType)} ${selected ? 'ring-2 ring-primary' : ''}`}>
+    <div className={`group relative overflow-hidden rounded-xl border-2 ${colors.border} ${colors.bg} 
+      min-w-[240px] max-w-[280px] shadow-lg hover:shadow-xl transition-all duration-200
+      ${selected ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
+      
       {/* Input Handle */}
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3 h-3 !bg-gray-400 border-2 border-white"
+        className="w-3 h-3 !bg-white border-2 border-gray-400 shadow-sm hover:scale-110 transition-transform"
       />
       
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="h-4 w-4" />
-        <div className="font-bold text-sm">{data.label}</div>
-      </div>
-      <div className="text-xs text-muted-foreground mb-1">{data.stepType}</div>
-      {data.command && (
-        <div className="text-xs font-mono bg-background/50 p-1 rounded truncate">
-          {data.command.substring(0, 40)}...
+      {/* Header */}
+      <div className="flex items-center gap-3 p-4 pb-2">
+        <div className={`p-2 ${colors.iconBg} rounded-lg shadow-sm`}>
+          <Icon className="h-5 w-5 text-white" />
         </div>
-      )}
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-sm text-foreground truncate">{data.label}</div>
+          <div className="text-xs text-muted-foreground capitalize">{data.stepType.replace('-', ' ')}</div>
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="px-4 pb-4">
+        {data.command && (
+          <div className="mt-2 p-2 bg-background/70 rounded-md border">
+            <div className="text-xs font-mono text-muted-foreground truncate">
+              {data.command.length > 35 ? `${data.command.substring(0, 35)}...` : data.command}
+            </div>
+          </div>
+        )}
+        
+        {data.repository_url && (
+          <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+            <GitBranch className="h-3 w-3" />
+            <span className="truncate">{data.repository_url.split('/').pop()?.replace('.git', '')}</span>
+          </div>
+        )}
+        
+        {data.docker_image && (
+          <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+            <Container className="h-3 w-3" />
+            <span className="truncate">{data.docker_image}</span>
+          </div>
+        )}
+      </div>
 
       {/* Output Handle */}
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 !bg-gray-400 border-2 border-white"
+        className="w-3 h-3 !bg-white border-2 border-gray-400 shadow-sm hover:scale-110 transition-transform"
       />
+      
+      {/* Status indicator */}
+      <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full opacity-60"></div>
     </div>
   );
 };
@@ -176,11 +373,14 @@ const nodeTypes: NodeTypes = {
   stepNode: StepNode,
 };
 
-// Graph builder component
+// Enhanced graph builder component
 const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeline: any }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [openCategories, setOpenCategories] = useState<{ [key: string]: boolean }>({
+    "Source Control": true,
+  });
   const reactFlowWrapper = useRef(null);
   const { screenToFlowPosition } = useReactFlow();
 
@@ -189,8 +389,10 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
       ...params,
       type: 'smoothstep',
       animated: true,
+      style: { stroke: '#6366f1', strokeWidth: 2 },
       markerEnd: {
         type: MarkerType.ArrowClosed,
+        color: '#6366f1',
       },
     }, eds)),
     [setEdges],
@@ -220,9 +422,11 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
         type: 'stepNode',
         position,
         data: { 
-          label: `New ${type} step`, 
+          label: `${type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}`, 
           stepType: type,
-          command: type === 'shell' ? 'echo "Hello World"' : ''
+          command: type.includes('shell') ? 'echo "Hello World"' : '',
+          repository_url: type.includes('git') ? 'https://github.com/user/repo.git' : '',
+          docker_image: type.includes('docker') ? 'node:18-alpine' : '',
         },
       };
 
@@ -238,8 +442,10 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
             target: newNode.id,
             type: 'smoothstep',
             animated: true,
+            style: { stroke: '#6366f1', strokeWidth: 2 },
             markerEnd: {
               type: MarkerType.ArrowClosed,
+              color: '#6366f1',
             },
           };
           setEdges((eds) => eds.concat(newEdge));
@@ -279,21 +485,41 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
   }, [nodes, setPipeline]);
 
   return (
-    <div className="flex h-[600px] gap-4">
-      {/* Component Palette */}
-      <div className="w-64 border-r pr-4">
-        <h3 className="font-semibold mb-4">Components</h3>
+    <div className="flex h-[700px] gap-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl border">
+      {/* Enhanced Component Palette */}
+      <div className="w-80 bg-card border-r border-border p-4 overflow-y-auto">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <FolderOpen className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">Component Library</h3>
+            <p className="text-xs text-muted-foreground">Drag components to build your pipeline</p>
+          </div>
+        </div>
+        
         <div className="space-y-3">
-          {componentTypes.map((component) => (
-            <DraggableNode key={component.type} {...component} />
+          {Object.entries(componentCategories).map(([category, data]) => (
+            <CategoryDropdown
+              key={category}
+              category={category}
+              data={data}
+              isOpen={openCategories[category]}
+              onToggle={() => setOpenCategories(prev => ({
+                ...prev,
+                [category]: !prev[category]
+              }))}
+            />
           ))}
         </div>
-        <div className="mt-4 space-y-2">
+        
+        <div className="mt-6 space-y-3 pt-4 border-t border-border">
           <Button 
             onClick={updatePipelineFromGraph}
-            className="w-full"
-            variant="outline"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            size="sm"
           >
+            <CheckCircle className="h-4 w-4 mr-2" />
             Update Pipeline
           </Button>
           <Button 
@@ -302,25 +528,31 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
               setEdges([]);
             }}
             className="w-full"
-            variant="destructive"
+            variant="outline"
             size="sm"
           >
+            <Trash2 className="h-4 w-4 mr-2" />
             Clear Canvas
           </Button>
         </div>
-        <div className="mt-4 p-3 bg-muted rounded-lg">
-          <h4 className="text-sm font-medium mb-2">Instructions:</h4>
-          <ul className="text-xs space-y-1 text-muted-foreground">
-            <li>• Drag components to canvas</li>
-            <li>• Connect nodes using handles</li>
+        
+        <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+          <h4 className="text-sm font-medium mb-2 flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            Quick Tips
+          </h4>
+          <ul className="text-xs space-y-1.5 text-muted-foreground">
+            <li>• Drag components from categories above</li>
+            <li>• Connect nodes using the circular handles</li>
             <li>• Components auto-connect when dropped</li>
-            <li>• Update pipeline to save changes</li>
+            <li>• Click nodes to select and configure them</li>
+            <li>• Use zoom and pan to navigate large pipelines</li>
           </ul>
         </div>
       </div>
 
-      {/* Graph Canvas */}
-      <div className="flex-1" ref={reactFlowWrapper}>
+      {/* Enhanced Graph Canvas */}
+      <div className="flex-1 relative" ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -332,19 +564,43 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
           nodeTypes={nodeTypes}
           onNodeClick={(_, node) => setSelectedNode(node.id)}
           fitView
-          className="bg-background"
+          className="bg-gradient-to-br from-blue-50/30 to-purple-50/30 dark:from-blue-950/30 dark:to-purple-950/30"
           defaultEdgeOptions={{
             type: 'smoothstep',
             animated: true,
+            style: { stroke: '#6366f1', strokeWidth: 2 },
             markerEnd: {
               type: MarkerType.ArrowClosed,
+              color: '#6366f1',
             },
           }}
+          proOptions={{ hideAttribution: true }}
         >
-          <Controls />
-          <MiniMap />
-          <Background gap={20} />
+          <Controls className="bg-card border border-border shadow-lg" />
+          <MiniMap 
+            className="bg-card border border-border shadow-lg"
+            nodeColor={(node) => {
+              const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#f59e0b', '#6366f1', '#14b8a6'];
+              const hash = node.id.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0);
+              return colors[Math.abs(hash) % colors.length];
+            }}
+          />
+          <Background gap={20} className="opacity-30" />
         </ReactFlow>
+        
+        {nodes.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center p-8 bg-card/80 backdrop-blur-sm rounded-xl border border-border shadow-lg">
+              <div className="p-4 bg-primary/10 rounded-full inline-block mb-4">
+                <Boxes className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Start Building Your Pipeline</h3>
+              <p className="text-muted-foreground text-sm">
+                Drag components from the left panel to create your CI/CD pipeline
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
