@@ -3,7 +3,8 @@ import {
   Plus, Trash2, Move, Play, Settings, Download, GitBranch, Package, Server, Terminal, Zap, Database, 
   Cloud, Webhook, Clock, MonitorSpeaker, Code, FileText, Shield, Cpu, Network, HardDrive,
   Container, Globe, Lock, TestTube, Wrench, Layers, Archive, CheckCircle, AlertCircle,
-  ChevronDown, FolderOpen, Boxes, Rocket
+  ChevronDown, FolderOpen, Boxes, Rocket, Bell, MessageSquare, Mail, Maximize, Minimize,
+  Sun, Moon
 } from "lucide-react";
 import {
   ReactFlow,
@@ -86,38 +87,54 @@ interface PipelineBuilderProps {
   onSave: (yaml: string) => void;
 }
 
-// Enhanced component categories with submodules
+// Comprehensive component categories to compete with Jenkins
 const componentCategories = {
   "Source Control": {
     icon: GitBranch,
     color: "bg-emerald-500",
     components: [
-      { type: 'git-clone', label: 'Git Clone', icon: GitBranch, description: 'Clone repository from Git' },
-      { type: 'git-pull', label: 'Git Pull', icon: Download, description: 'Pull latest changes' },
+      { type: 'github-clone', label: 'GitHub Clone', icon: GitBranch, description: 'Clone from GitHub repository' },
+      { type: 'gitlab-clone', label: 'GitLab Clone', icon: GitBranch, description: 'Clone from GitLab repository' },
+      { type: 'bitbucket-clone', label: 'Bitbucket Clone', icon: GitBranch, description: 'Clone from Bitbucket repository' },
       { type: 'git-checkout', label: 'Git Checkout', icon: Code, description: 'Switch branches or commits' },
+      { type: 'git-merge', label: 'Git Merge', icon: Archive, description: 'Merge branches' },
+      { type: 'git-tag', label: 'Git Tag', icon: Archive, description: 'Create Git tags' },
       { type: 'github-release', label: 'GitHub Release', icon: Archive, description: 'Create GitHub releases' },
+      { type: 'gitlab-release', label: 'GitLab Release', icon: Archive, description: 'Create GitLab releases' },
     ]
   },
   "Build & Compile": {
     icon: Wrench,
     color: "bg-blue-500",
     components: [
-      { type: 'shell-command', label: 'Shell Command', icon: Terminal, description: 'Execute shell commands' },
-      { type: 'rust-build', label: 'Rust Build', icon: Package, description: 'Build Rust projects with Cargo' },
-      { type: 'node-build', label: 'Node.js Build', icon: Globe, description: 'Build Node.js applications' },
-      { type: 'python-build', label: 'Python Build', icon: Code, description: 'Build Python applications' },
-      { type: 'maven-build', label: 'Maven Build', icon: Layers, description: 'Build Java projects with Maven' },
+      { type: 'normal-build', label: 'Normal Build', icon: Wrench, description: 'Standard build process' },
+      { type: 'docker-build', label: 'Docker Build', icon: Container, description: 'Build Docker images' },
+      { type: 'helm-build', label: 'Helm Chart Build', icon: Boxes, description: 'Build Helm charts for Kubernetes' },
+      { type: 'rust-cargo', label: 'Rust Cargo', icon: Package, description: 'Build Rust projects with Cargo' },
+      { type: 'node-npm', label: 'Node.js NPM', icon: Globe, description: 'Build Node.js with NPM' },
+      { type: 'node-yarn', label: 'Node.js Yarn', icon: Globe, description: 'Build Node.js with Yarn' },
+      { type: 'python-pip', label: 'Python Pip', icon: Code, description: 'Build Python with Pip' },
+      { type: 'maven-build', label: 'Maven Build', icon: Layers, description: 'Build Java with Maven' },
+      { type: 'gradle-build', label: 'Gradle Build', icon: Layers, description: 'Build Java with Gradle' },
+      { type: 'go-build', label: 'Go Build', icon: Package, description: 'Build Go applications' },
+      { type: 'dotnet-build', label: '.NET Build', icon: Package, description: 'Build .NET applications' },
     ]
   },
-  "Testing": {
+  "Testing & Security": {
     icon: TestTube,
     color: "bg-yellow-500",
     components: [
       { type: 'unit-tests', label: 'Unit Tests', icon: CheckCircle, description: 'Run unit tests' },
       { type: 'integration-tests', label: 'Integration Tests', icon: Network, description: 'Run integration tests' },
-      { type: 'security-scan', label: 'Security Scan', icon: Shield, description: 'Security vulnerability scanning' },
+      { type: 'e2e-tests', label: 'E2E Tests', icon: Globe, description: 'End-to-end testing' },
+      { type: 'owasp-zap', label: 'OWASP ZAP', icon: Shield, description: 'OWASP ZAP security scan' },
+      { type: 'owasp-dependency', label: 'OWASP Dependency Check', icon: Shield, description: 'Check for vulnerable dependencies' },
+      { type: 'snyk-scan', label: 'Snyk Security', icon: Shield, description: 'Snyk vulnerability scanning' },
+      { type: 'sonarqube', label: 'SonarQube', icon: FileText, description: 'Code quality with SonarQube' },
+      { type: 'sast-scan', label: 'SAST Scan', icon: Shield, description: 'Static Application Security Testing' },
+      { type: 'dast-scan', label: 'DAST Scan', icon: Shield, description: 'Dynamic Application Security Testing' },
       { type: 'performance-test', label: 'Performance Test', icon: Cpu, description: 'Load and performance testing' },
-      { type: 'code-quality', label: 'Code Quality', icon: FileText, description: 'Code quality analysis' },
+      { type: 'accessibility-test', label: 'Accessibility Test', icon: CheckCircle, description: 'Accessibility compliance testing' },
     ]
   },
   "Containerization": {
@@ -125,9 +142,24 @@ const componentCategories = {
     color: "bg-purple-500",
     components: [
       { type: 'docker-build', label: 'Docker Build', icon: Package, description: 'Build Docker images' },
-      { type: 'docker-push', label: 'Docker Push', icon: Cloud, description: 'Push images to registry' },
-      { type: 'docker-scan', label: 'Docker Scan', icon: Shield, description: 'Scan for vulnerabilities' },
+      { type: 'docker-push', label: 'Docker Push', icon: Cloud, description: 'Push to Docker registry' },
+      { type: 'docker-scan', label: 'Docker Security Scan', icon: Shield, description: 'Scan Docker images for vulnerabilities' },
       { type: 'docker-compose', label: 'Docker Compose', icon: Layers, description: 'Multi-container deployment' },
+      { type: 'buildah', label: 'Buildah', icon: Container, description: 'Build OCI container images' },
+      { type: 'podman', label: 'Podman', icon: Container, description: 'Podman container operations' },
+      { type: 'kaniko', label: 'Kaniko', icon: Package, description: 'Build container images in Kubernetes' },
+    ]
+  },
+  "Kubernetes & Helm": {
+    icon: Boxes,
+    color: "bg-cyan-500",
+    components: [
+      { type: 'helm-deploy', label: 'Helm Deploy', icon: Boxes, description: 'Deploy with Helm charts' },
+      { type: 'helm-upgrade', label: 'Helm Upgrade', icon: Rocket, description: 'Upgrade Helm releases' },
+      { type: 'helm-rollback', label: 'Helm Rollback', icon: Archive, description: 'Rollback Helm releases' },
+      { type: 'kubectl-apply', label: 'Kubectl Apply', icon: Server, description: 'Apply Kubernetes manifests' },
+      { type: 'kustomize', label: 'Kustomize', icon: Layers, description: 'Kubernetes native configuration management' },
+      { type: 'k8s-secrets', label: 'K8s Secrets', icon: Lock, description: 'Manage Kubernetes secrets' },
     ]
   },
   "Deployment": {
@@ -136,9 +168,28 @@ const componentCategories = {
     components: [
       { type: 'deploy-local', label: 'Local Deploy', icon: HardDrive, description: 'Deploy to local server' },
       { type: 'deploy-ssh', label: 'SSH Deploy', icon: Server, description: 'Deploy via SSH' },
-      { type: 'deploy-k8s', label: 'Kubernetes Deploy', icon: Boxes, description: 'Deploy to Kubernetes' },
-      { type: 'deploy-cloud', label: 'Cloud Deploy', icon: Cloud, description: 'Deploy to cloud platforms' },
-      { type: 'deploy-docker', label: 'Docker Deploy', icon: Container, description: 'Deploy Docker containers' },
+      { type: 'deploy-k8s', label: 'Kubernetes Deploy', icon: Boxes, description: 'Deploy to Kubernetes cluster' },
+      { type: 'deploy-aws', label: 'AWS Deploy', icon: Cloud, description: 'Deploy to AWS' },
+      { type: 'deploy-azure', label: 'Azure Deploy', icon: Cloud, description: 'Deploy to Azure' },
+      { type: 'deploy-gcp', label: 'GCP Deploy', icon: Cloud, description: 'Deploy to Google Cloud' },
+      { type: 'deploy-heroku', label: 'Heroku Deploy', icon: Cloud, description: 'Deploy to Heroku' },
+      { type: 'deploy-vercel', label: 'Vercel Deploy', icon: Globe, description: 'Deploy to Vercel' },
+      { type: 'deploy-netlify', label: 'Netlify Deploy', icon: Globe, description: 'Deploy to Netlify' },
+    ]
+  },
+  "Monitoring & Observability": {
+    icon: MonitorSpeaker,
+    color: "bg-teal-500",
+    components: [
+      { type: 'prometheus-setup', label: 'Prometheus', icon: MonitorSpeaker, description: 'Set up Prometheus monitoring' },
+      { type: 'grafana-setup', label: 'Grafana', icon: MonitorSpeaker, description: 'Set up Grafana dashboards' },
+      { type: 'loki-setup', label: 'Loki', icon: FileText, description: 'Set up Loki log aggregation' },
+      { type: 'datadog-setup', label: 'DataDog', icon: MonitorSpeaker, description: 'Set up DataDog monitoring' },
+      { type: 'newrelic-setup', label: 'New Relic', icon: MonitorSpeaker, description: 'Set up New Relic APM' },
+      { type: 'elk-setup', label: 'ELK Stack', icon: FileText, description: 'Set up ELK stack logging' },
+      { type: 'jaeger-setup', label: 'Jaeger', icon: Network, description: 'Set up Jaeger tracing' },
+      { type: 'health-check', label: 'Health Check', icon: CheckCircle, description: 'Application health monitoring' },
+      { type: 'smoke-test', label: 'Smoke Test', icon: AlertCircle, description: 'Basic functionality verification' },
     ]
   },
   "Database": {
@@ -147,18 +198,23 @@ const componentCategories = {
     components: [
       { type: 'db-migrate', label: 'DB Migration', icon: Database, description: 'Run database migrations' },
       { type: 'db-backup', label: 'DB Backup', icon: Archive, description: 'Backup database' },
-      { type: 'db-seed', label: 'DB Seed', icon: Package, description: 'Seed database with data' },
-      { type: 'db-health', label: 'DB Health Check', icon: CheckCircle, description: 'Check database health' },
+      { type: 'db-restore', label: 'DB Restore', icon: Download, description: 'Restore database from backup' },
+      { type: 'db-seed', label: 'DB Seed', icon: Package, description: 'Seed database with test data' },
+      { type: 'db-health', label: 'DB Health Check', icon: CheckCircle, description: 'Check database connectivity' },
+      { type: 'redis-setup', label: 'Redis Setup', icon: Database, description: 'Configure Redis cache' },
+      { type: 'mongodb-setup', label: 'MongoDB Setup', icon: Database, description: 'Configure MongoDB' },
+      { type: 'postgres-setup', label: 'PostgreSQL Setup', icon: Database, description: 'Configure PostgreSQL' },
     ]
   },
-  "Monitoring": {
-    icon: MonitorSpeaker,
-    color: "bg-teal-500",
+  "Notifications": {
+    icon: Bell,
+    color: "bg-orange-500",
     components: [
-      { type: 'health-check', label: 'Health Check', icon: CheckCircle, description: 'Application health check' },
-      { type: 'smoke-test', label: 'Smoke Test', icon: AlertCircle, description: 'Basic functionality test' },
-      { type: 'monitoring-setup', label: 'Setup Monitoring', icon: MonitorSpeaker, description: 'Configure monitoring' },
-      { type: 'log-analysis', label: 'Log Analysis', icon: FileText, description: 'Analyze application logs' },
+      { type: 'slack-notify', label: 'Slack Notification', icon: MessageSquare, description: 'Send Slack notifications' },
+      { type: 'email-notify', label: 'Email Notification', icon: Mail, description: 'Send email notifications' },
+      { type: 'teams-notify', label: 'Teams Notification', icon: MessageSquare, description: 'Send Microsoft Teams notifications' },
+      { type: 'webhook-notify', label: 'Webhook', icon: Webhook, description: 'Send webhook notifications' },
+      { type: 'jira-update', label: 'JIRA Update', icon: AlertCircle, description: 'Update JIRA tickets' },
     ]
   }
 };
@@ -235,46 +291,55 @@ const CategoryDropdown = ({ category, data, isOpen, onToggle }: any) => {
 // Enhanced step node for the graph with better styling
 const StepNode = ({ data, selected }: { data: any; selected?: boolean }) => {
   const getNodeIcon = (stepType: string) => {
-    // Map step types to their appropriate icons
+    // Comprehensive icon mapping for all step types
     const iconMap: { [key: string]: any } = {
-      'git-clone': GitBranch,
-      'git-pull': Download,
-      'git-checkout': Code,
-      'github-release': Archive,
-      'shell-command': Terminal,
-      'rust-build': Package,
-      'node-build': Globe,
-      'python-build': Code,
-      'maven-build': Layers,
-      'unit-tests': CheckCircle,
-      'integration-tests': Network,
-      'security-scan': Shield,
-      'performance-test': Cpu,
-      'code-quality': FileText,
-      'docker-build': Package,
-      'docker-push': Cloud,
-      'docker-scan': Shield,
-      'docker-compose': Layers,
-      'deploy-local': HardDrive,
-      'deploy-ssh': Server,
-      'deploy-k8s': Boxes,
-      'deploy-cloud': Cloud,
-      'deploy-docker': Container,
-      'db-migrate': Database,
-      'db-backup': Archive,
-      'db-seed': Package,
-      'db-health': CheckCircle,
-      'health-check': CheckCircle,
-      'smoke-test': AlertCircle,
-      'monitoring-setup': MonitorSpeaker,
-      'log-analysis': FileText,
+      // Source Control
+      'github-clone': GitBranch, 'gitlab-clone': GitBranch, 'bitbucket-clone': GitBranch,
+      'git-checkout': Code, 'git-merge': Archive, 'git-tag': Archive,
+      'github-release': Archive, 'gitlab-release': Archive,
+      
+      // Build & Compile
+      'normal-build': Wrench, 'docker-build': Container, 'helm-build': Boxes,
+      'rust-cargo': Package, 'node-npm': Globe, 'node-yarn': Globe,
+      'python-pip': Code, 'maven-build': Layers, 'gradle-build': Layers,
+      'go-build': Package, 'dotnet-build': Package,
+      
+      // Testing & Security
+      'unit-tests': CheckCircle, 'integration-tests': Network, 'e2e-tests': Globe,
+      'owasp-zap': Shield, 'owasp-dependency': Shield, 'snyk-scan': Shield,
+      'sonarqube': FileText, 'sast-scan': Shield, 'dast-scan': Shield,
+      'performance-test': Cpu, 'accessibility-test': CheckCircle,
+      
+      // Containerization
+      'docker-push': Cloud, 'docker-scan': Shield, 'docker-compose': Layers,
+      'buildah': Container, 'podman': Container, 'kaniko': Package,
+      
+      // Kubernetes & Helm
+      'helm-deploy': Boxes, 'helm-upgrade': Rocket, 'helm-rollback': Archive,
+      'kubectl-apply': Server, 'kustomize': Layers, 'k8s-secrets': Lock,
+      
+      // Deployment
+      'deploy-local': HardDrive, 'deploy-ssh': Server, 'deploy-k8s': Boxes,
+      'deploy-aws': Cloud, 'deploy-azure': Cloud, 'deploy-gcp': Cloud,
+      'deploy-heroku': Cloud, 'deploy-vercel': Globe, 'deploy-netlify': Globe,
+      
+      // Monitoring & Observability
+      'prometheus-setup': MonitorSpeaker, 'grafana-setup': MonitorSpeaker,
+      'loki-setup': FileText, 'datadog-setup': MonitorSpeaker,
+      'newrelic-setup': MonitorSpeaker, 'elk-setup': FileText,
+      'jaeger-setup': Network, 'health-check': CheckCircle, 'smoke-test': AlertCircle,
+      
+      // Database
+      'db-migrate': Database, 'db-backup': Archive, 'db-restore': Download,
+      'db-seed': Package, 'db-health': CheckCircle, 'redis-setup': Database,
+      'mongodb-setup': Database, 'postgres-setup': Database,
+      
+      // Notifications
+      'slack-notify': MessageSquare, 'email-notify': Mail, 'teams-notify': MessageSquare,
+      'webhook-notify': Webhook, 'jira-update': AlertCircle,
+      
       // Legacy mappings
-      git: GitBranch,
-      shell: Terminal,
-      docker: Package,
-      deploy: Server,
-      test: Zap,
-      database: Database,
+      git: GitBranch, shell: Terminal, docker: Package, deploy: Server, test: Zap, database: Database,
     };
     return iconMap[stepType] || Terminal;
   };
@@ -381,6 +446,8 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
   const [openCategories, setOpenCategories] = useState<{ [key: string]: boolean }>({
     "Source Control": true,
   });
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const reactFlowWrapper = useRef(null);
   const { screenToFlowPosition } = useReactFlow();
 
@@ -485,20 +552,37 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
   }, [nodes, setPipeline]);
 
   return (
-    <div className="flex h-[700px] gap-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl border">
-      {/* Enhanced Component Palette */}
-      <div className="w-80 bg-card border-r border-border p-4 overflow-y-auto">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <FolderOpen className="h-5 w-5 text-primary" />
+    <div className={`h-full flex ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''} ${isDarkMode ? 'dark' : ''}`}>
+      {/* Left Sidebar - Component Palette */}
+      <div className="w-80 bg-card border-r border-border flex flex-col overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold">Pipeline Components</h2>
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="h-8 w-8 p-0"
+                title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                className="h-8 w-8 p-0"
+                title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              >
+                {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-foreground">Component Library</h3>
-            <p className="text-xs text-muted-foreground">Drag components to build your pipeline</p>
-          </div>
+          <p className="text-sm text-muted-foreground">Compete with Jenkins - drag components to build enterprise-grade pipelines</p>
         </div>
         
-        <div className="space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 space-y-1">
           {Object.entries(componentCategories).map(([category, data]) => (
             <CategoryDropdown
               key={category}
@@ -513,10 +597,10 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
           ))}
         </div>
         
-        <div className="mt-6 space-y-3 pt-4 border-t border-border">
+        <div className="p-4 border-t border-border space-y-2">
           <Button 
             onClick={updatePipelineFromGraph}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="w-full"
             size="sm"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
@@ -535,72 +619,55 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
             Clear Canvas
           </Button>
         </div>
-        
-        <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-          <h4 className="text-sm font-medium mb-2 flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
-            Quick Tips
-          </h4>
-          <ul className="text-xs space-y-1.5 text-muted-foreground">
-            <li>• Drag components from categories above</li>
-            <li>• Connect nodes using the circular handles</li>
-            <li>• Components auto-connect when dropped</li>
-            <li>• Click nodes to select and configure them</li>
-            <li>• Use zoom and pan to navigate large pipelines</li>
-          </ul>
-        </div>
       </div>
 
-      {/* Enhanced Graph Canvas */}
-      <div className="flex-1 relative" ref={reactFlowWrapper}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          nodeTypes={nodeTypes}
-          onNodeClick={(_, node) => setSelectedNode(node.id)}
-          fitView
-          className="bg-gradient-to-br from-blue-50/30 to-purple-50/30 dark:from-blue-950/30 dark:to-purple-950/30"
-          defaultEdgeOptions={{
-            type: 'smoothstep',
-            animated: true,
-            style: { stroke: '#6366f1', strokeWidth: 2 },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              color: '#6366f1',
-            },
-          }}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Controls className="bg-card border border-border shadow-lg" />
-          <MiniMap 
-            className="bg-card border border-border shadow-lg"
-            nodeColor={(node) => {
-              const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#f59e0b', '#6366f1', '#14b8a6'];
-              const hash = node.id.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0);
-              return colors[Math.abs(hash) % colors.length];
-            }}
-          />
-          <Background gap={20} className="opacity-30" />
-        </ReactFlow>
-        
-        {nodes.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center p-8 bg-card/80 backdrop-blur-sm rounded-xl border border-border shadow-lg">
-              <div className="p-4 bg-primary/10 rounded-full inline-block mb-4">
-                <Boxes className="h-8 w-8 text-primary" />
+      {/* Main Canvas */}
+      <div className="flex-1 relative">
+        <div ref={reactFlowWrapper} className="h-full">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            nodeTypes={nodeTypes}
+            fitView
+            className={`${isDarkMode ? 'bg-gray-900' : 'bg-muted/30'}`}
+            attributionPosition="bottom-left"
+          >
+            <Controls className="bg-background border border-border" />
+            <MiniMap 
+              className="bg-background border border-border"
+              nodeColor={() => '#6366f1'}
+            />
+            <Background 
+              gap={20} 
+              size={1} 
+              className={`${isDarkMode ? 'opacity-30' : 'opacity-50'}`} 
+            />
+            
+            {/* Empty state */}
+            {nodes.length === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="text-center p-8">
+                  <div className="mx-auto mb-4 w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                    <FolderOpen className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">Enterprise CI/CD Pipeline Builder</h3>
+                  <p className="text-muted-foreground mb-4">Drag components from the left sidebar to create Jenkins-level pipelines</p>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <div>• GitHub, GitLab, Bitbucket integration</div>
+                    <div>• Docker, Helm, Kubernetes deployments</div>
+                    <div>• OWASP ZAP, Snyk security scanning</div>
+                    <div>• Prometheus, Grafana, DataDog monitoring</div>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Start Building Your Pipeline</h3>
-              <p className="text-muted-foreground text-sm">
-                Drag components from the left panel to create your CI/CD pipeline
-              </p>
-            </div>
-          </div>
-        )}
+            )}
+          </ReactFlow>
+        </div>
       </div>
     </div>
   );
