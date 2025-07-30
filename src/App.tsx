@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
+import Welcome from "./pages/Welcome";
 import Pipelines from "./pages/Pipelines";
 import Repositories from "./pages/Repositories";
 import Settings from "./pages/Settings";
@@ -26,7 +27,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Welcome />} />
+            <Route path="/dashboard" element={<Index />} />
             <Route path="/pipelines" element={<Pipelines />} />
             <Route path="/pipelines/builder" element={<PipelineBuilder />} />
             <Route path="/repositories" element={<Repositories />} />

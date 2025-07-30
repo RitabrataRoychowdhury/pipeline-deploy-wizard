@@ -170,3 +170,66 @@ All colors MUST be HSL.
   0% { box-shadow: 0 0 20px rgba(255,255,255,0.1); }
   100% { box-shadow: 0 0 40px rgba(255,255,255,0.3), 0 0 60px rgba(255,255,255,0.1); }
 }
+
+/* Dark mode enhancements for pipeline builder */
+.dark .react-flow {
+  background: hsl(224 71% 4%);
+}
+
+.dark .react-flow__background {
+  color: hsl(215 14% 34%);
+}
+
+.dark .react-flow__controls {
+  background: hsl(224 71% 4%);
+  border: 1px solid hsl(215 14% 34%);
+}
+
+.dark .react-flow__minimap {
+  background: hsl(224 71% 4%);
+  border: 1px solid hsl(215 14% 34%);
+}
+
+.dark .react-flow__node {
+  background: hsl(224 71% 4%);
+  border: 1px solid hsl(215 14% 34%);
+  color: hsl(213 31% 91%);
+}
+
+.dark .react-flow__node:hover {
+  border-color: hsl(217 33% 17%);
+}
+
+.dark .react-flow__node.selected {
+  border-color: hsl(262 83% 58%);
+}
+
+.dark .react-flow__edge {
+  stroke: hsl(262 83% 58%);
+}
+
+.dark .react-flow__handle {
+  background: hsl(224 71% 4%);
+  border: 2px solid hsl(215 14% 34%);
+}
+
+/* Glass effects for light mode */
+.glass-effect {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Animation utilities */
+.animate-float {
+  animation: var(--animation-float);
+}
+
+.animate-pulse-slow {
+  animation: var(--animation-pulse-slow);
+}
+
+.animate-glow {
+  animation: var(--animation-glow);
+}

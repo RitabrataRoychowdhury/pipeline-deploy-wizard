@@ -4,7 +4,7 @@ import {
   Cloud, Webhook, Clock, MonitorSpeaker, Code, FileText, Shield, Cpu, Network, HardDrive,
   Container, Globe, Lock, TestTube, Wrench, Layers, Archive, CheckCircle, AlertCircle,
   ChevronDown, FolderOpen, Boxes, Rocket, Bell, MessageSquare, Mail, Maximize, Minimize,
-  Sun, Moon
+  Sun, Moon, X, Scissors
 } from "lucide-react";
 import {
   ReactFlow,
@@ -466,6 +466,43 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
     [setEdges],
   );
 
+  // Delete functions
+  const onNodesDelete = useCallback(
+    (deleted: Node[]) => {
+      setNodes((nds) => nds.filter((node) => !deleted.some((d) => d.id === node.id)));
+      setEdges((eds) => eds.filter((edge) => 
+        !deleted.some((d) => d.id === edge.source || d.id === edge.target)
+      ));
+    },
+    [setNodes, setEdges]
+  );
+
+  const onEdgesDelete = useCallback(
+    (deleted: Edge[]) => {
+      setEdges((eds) => eds.filter((edge) => !deleted.some((d) => d.id === edge.id)));
+    },
+    [setEdges]
+  );
+
+  const deleteSelectedElements = useCallback(() => {
+    setNodes((nds) => nds.filter((node) => !node.selected));
+    setEdges((eds) => eds.filter((edge) => !edge.selected));
+  }, [setNodes, setEdges]);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.key === 'Delete' || event.key === 'Backspace') && 
+          (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA')) {
+        event.preventDefault();
+        deleteSelectedElements();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [deleteSelectedElements]);
+
   const onDragOver = useCallback((event: any) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
@@ -608,6 +645,15 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
             Update Pipeline
           </Button>
           <Button 
+            onClick={deleteSelectedElements}
+            className="w-full"
+            variant="destructive"
+            size="sm"
+          >
+            <Scissors className="h-4 w-4 mr-2" />
+            Delete Selected
+          </Button>
+          <Button 
             onClick={() => {
               setNodes([]);
               setEdges([]);
@@ -619,6 +665,9 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
             <Trash2 className="h-4 w-4 mr-2" />
             Clear Canvas
           </Button>
+          <div className="text-xs text-muted-foreground text-center pt-2">
+            Press Delete/Backspace to remove selected items
+          </div>
         </div>
       </div>
 
@@ -633,10 +682,13 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
             onConnect={onConnect}
             onDrop={onDrop}
             onDragOver={onDragOver}
+            onNodesDelete={onNodesDelete}
+            onEdgesDelete={onEdgesDelete}
             nodeTypes={nodeTypes}
             fitView
             className={`${isDarkMode ? 'bg-gray-900' : 'bg-muted/30'}`}
             attributionPosition="bottom-left"
+            deleteKeyCode="Delete"
           >
             <Controls className="bg-background border border-border" />
             <MiniMap 
