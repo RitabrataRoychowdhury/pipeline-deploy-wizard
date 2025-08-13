@@ -609,8 +609,16 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsFullscreen(!isFullscreen)}
-                className="h-8 w-8 p-0"
+                onClick={() => {
+                  setIsFullscreen(!isFullscreen);
+                  // Toggle body overflow for proper fullscreen
+                  if (!isFullscreen) {
+                    document.body.style.overflow = 'hidden';
+                  } else {
+                    document.body.style.overflow = '';
+                  }
+                }}
+                className="h-8 w-8 p-0 transition-transform hover:scale-110"
                 title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
               >
                 {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
@@ -882,6 +890,52 @@ retry_count: ${pipeline.retry_count}`;
   const handleSave = () => {
     const yaml = generateYAML();
     onSave(yaml);
+  };
+
+  const handleLoad = () => {
+    // Create a file input to load YAML files
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.yml,.yaml';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target?.result as string;
+          try {
+            // Basic implementation - would need YAML parser for full functionality
+            console.log("Loaded pipeline:", content);
+            alert('Pipeline loaded successfully! (Demo mode - full YAML parsing coming soon)');
+          } catch (error) {
+            console.error("Error parsing YAML:", error);
+            alert('Error loading pipeline file');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
+  };
+
+  const handleRun = async () => {
+    try {
+      const yamlContent = generateYAML();
+      console.log("Running pipeline with config:", yamlContent);
+      
+      // Simulate pipeline execution for demo
+      alert('Pipeline execution started! (Demo mode - check console for configuration)');
+      
+      // In real implementation, this would call the backend
+      // const response = await fetch('/api/pipelines/execute', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ config: yamlContent })
+      // });
+    } catch (error) {
+      console.error("Error executing pipeline:", error);
+      alert('Error executing pipeline');
+    }
   };
 
   return (
@@ -1466,8 +1520,17 @@ retry_count: ${pipeline.retry_count}`;
         </CardContent>
       </Card>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button onClick={handleLoad} variant="outline" className="min-w-32">
+              <FolderOpen className="h-4 w-4 mr-2" />
+              Load Pipeline
+            </Button>
+            <Button onClick={handleRun} variant="outline" className="min-w-32">
+              <Play className="h-4 w-4 mr-2" />
+              Run Pipeline
+            </Button>
             <Button onClick={handleSave} className="min-w-32">
+              <Download className="h-4 w-4 mr-2" />
               Save Pipeline
             </Button>
           </div>

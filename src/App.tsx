@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { PageTransition } from "@/components/PageTransition";
 import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
 import Pipelines from "./pages/Pipelines";
@@ -27,14 +28,14 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Welcome />} />
-            <Route path="/dashboard" element={<Index />} />
-            <Route path="/pipelines" element={<Pipelines />} />
-            <Route path="/pipelines/builder" element={<PipelineBuilder />} />
-            <Route path="/repositories" element={<Repositories />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/" element={<PageTransition><Welcome /></PageTransition>} />
+            <Route path="/dashboard" element={<PageTransition><Index /></PageTransition>} />
+            <Route path="/pipelines" element={<PageTransition><Pipelines /></PageTransition>} />
+            <Route path="/pipelines/builder" element={<PageTransition><PipelineBuilder /></PageTransition>} />
+            <Route path="/repositories" element={<PageTransition><Repositories /></PageTransition>} />
+            <Route path="/settings" element={<PageTransition><Settings /></PageTransition>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
