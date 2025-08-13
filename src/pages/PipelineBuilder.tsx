@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { PipelineBuilder } from "@/components/PipelineBuilder";
+import { WhiteboardGraphBuilder } from "@/components/WhiteboardGraphBuilder";
+import { ReactFlowProvider } from '@xyflow/react';
 import Navbar from "@/components/Navbar";
 
 export default function PipelineBuilderPage() {
@@ -65,7 +66,22 @@ export default function PipelineBuilderPage() {
           </p>
         </div>
 
-        <PipelineBuilder onSave={handleSave} />
+        <ReactFlowProvider>
+          <WhiteboardGraphBuilder onSave={(nodes, edges) => {
+            // Convert to YAML and save
+            const yamlContent = `
+pipeline:
+  name: "Generated Pipeline"
+  stages:
+    - name: "main"
+      steps:
+${nodes.map(node => `        - name: "${node.data.label}"
+          type: "${node.data.stepType}"
+          command: "${node.data.command || ''}"`).join('\n')}
+`;
+            handleSave(yamlContent);
+          }} />
+        </ReactFlowProvider>
       </div>
     </div>
   );

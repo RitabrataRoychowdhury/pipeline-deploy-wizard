@@ -291,6 +291,8 @@ const CategoryDropdown = ({ category, data, isOpen, onToggle }: any) => {
 
 // Enhanced step node for the graph with better styling
 const StepNode = ({ data, selected }: { data: any; selected?: boolean }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
   const getNodeIcon = (stepType: string) => {
     // Comprehensive icon mapping for all step types
     const iconMap: { [key: string]: any } = {
@@ -375,49 +377,73 @@ const StepNode = ({ data, selected }: { data: any; selected?: boolean }) => {
   const colors = getNodeColor(data.stepType);
 
   return (
-    <div className={`group relative overflow-hidden rounded-xl border-2 ${colors.border} ${colors.bg} 
-      min-w-[240px] max-w-[280px] shadow-lg hover:shadow-xl transition-all duration-200
-      ${selected ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
+    <div 
+      className={`group relative overflow-hidden rounded-2xl border-2 ${colors.border} ${colors.bg} 
+        min-w-[200px] max-w-[240px] backdrop-blur-sm transition-all duration-300 ease-out
+        ${selected ? 'ring-2 ring-primary/50 ring-offset-2 ring-offset-background scale-105' : 'hover:scale-[1.02]'}
+        ${isHovered ? 'shadow-2xl border-primary/50' : 'shadow-lg hover:shadow-xl'}
+        cursor-move active:cursor-grabbing`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Floating action buttons */}
+      <div className={`absolute -top-2 -right-2 z-10 transition-all duration-200 ${
+        isHovered || selected ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+      }`}>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="h-6 w-6 p-0 rounded-full shadow-lg"
+          onClick={(e) => {
+            e.stopPropagation();
+            // Will be handled by parent component
+          }}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
       
       {/* Input Handle */}
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3 h-3 !bg-white border-2 border-gray-400 shadow-sm hover:scale-110 transition-transform"
+        className="w-2 h-2 !bg-primary border-2 border-background shadow-lg hover:scale-150 transition-all duration-200"
       />
       
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 pb-2">
-        <div className={`p-2 ${colors.iconBg} rounded-lg shadow-sm`}>
-          <Icon className="h-5 w-5 text-white" />
+      <div className="flex items-center gap-3 p-4 pb-3">
+        <div className={`p-2.5 ${colors.iconBg} rounded-xl shadow-md group-hover:scale-110 transition-transform duration-200`}>
+          <Icon className="h-4 w-4 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-sm text-foreground truncate">{data.label}</div>
-          <div className="text-xs text-muted-foreground capitalize">{data.stepType.replace('-', ' ')}</div>
+          <div className="font-semibold text-sm text-foreground truncate mb-0.5">{data.label}</div>
+          <div className="text-xs text-muted-foreground/80 capitalize font-medium">
+            {data.stepType.replace('-', ' ')}
+          </div>
         </div>
       </div>
       
       {/* Content */}
-      <div className="px-4 pb-4">
+      <div className="px-4 pb-4 space-y-2">
         {data.command && (
-          <div className="mt-2 p-2 bg-background/70 rounded-md border">
+          <div className="p-2.5 bg-muted/50 rounded-lg border border-border/30 backdrop-blur-sm">
             <div className="text-xs font-mono text-muted-foreground truncate">
-              {data.command.length > 35 ? `${data.command.substring(0, 35)}...` : data.command}
+              {data.command.length > 30 ? `${data.command.substring(0, 30)}...` : data.command}
             </div>
           </div>
         )}
         
         {data.repository_url && (
-          <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-            <GitBranch className="h-3 w-3" />
-            <span className="truncate">{data.repository_url.split('/').pop()?.replace('.git', '')}</span>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-2">
+            <GitBranch className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate font-medium">{data.repository_url.split('/').pop()?.replace('.git', '')}</span>
           </div>
         )}
         
         {data.docker_image && (
-          <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-            <Container className="h-3 w-3" />
-            <span className="truncate">{data.docker_image}</span>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-2">
+            <Container className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate font-medium">{data.docker_image}</span>
           </div>
         )}
       </div>
@@ -426,11 +452,15 @@ const StepNode = ({ data, selected }: { data: any; selected?: boolean }) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 !bg-white border-2 border-gray-400 shadow-sm hover:scale-110 transition-transform"
+        className="w-2 h-2 !bg-primary border-2 border-background shadow-lg hover:scale-150 transition-all duration-200"
       />
       
-      {/* Status indicator */}
-      <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full opacity-60"></div>
+      {/* Connection indicator */}
+      <div className={`absolute top-3 right-3 transition-all duration-200 ${
+        isHovered ? 'opacity-100 scale-100' : 'opacity-60 scale-75'
+      }`}>
+        <div className="w-2 h-2 bg-emerald-400 rounded-full shadow-sm animate-pulse"></div>
+      </div>
     </div>
   );
 };
@@ -439,7 +469,7 @@ const nodeTypes: NodeTypes = {
   stepNode: StepNode,
 };
 
-// Enhanced graph builder component
+// Enhanced whiteboard-style graph builder component
 const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeline: any }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -449,8 +479,11 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
   });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showGrid, setShowGrid] = useState(true);
+  const [snapToGrid, setSnapToGrid] = useState(false);
+  const [showPalette, setShowPalette] = useState(true);
   const reactFlowWrapper = useRef(null);
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, setViewport, getViewport } = useReactFlow();
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge({
@@ -590,145 +623,222 @@ const GraphBuilder = ({ pipeline, setPipeline }: { pipeline: Pipeline; setPipeli
   }, [nodes, setPipeline]);
 
   return (
-    <div className={`h-full flex ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''} ${isDarkMode ? 'dark' : ''}`}>
-      {/* Left Sidebar - Component Palette */}
-      <div className="w-80 bg-card border-r border-border flex flex-col overflow-hidden">
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-semibold">Pipeline Components</h2>
-            <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="h-8 w-8 p-0"
-                title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
-              >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setIsFullscreen(!isFullscreen);
-                  // Toggle body overflow for proper fullscreen
-                  if (!isFullscreen) {
-                    document.body.style.overflow = 'hidden';
-                  } else {
-                    document.body.style.overflow = '';
-                  }
-                }}
-                className="h-8 w-8 p-0 transition-transform hover:scale-110"
-                title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-              >
-                {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-              </Button>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground">Compete with Jenkins - drag components to build enterprise-grade pipelines</p>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4 space-y-1">
-          {Object.entries(componentCategories).map(([category, data]) => (
-            <CategoryDropdown
-              key={category}
-              category={category}
-              data={data}
-              isOpen={openCategories[category]}
-              onToggle={() => setOpenCategories(prev => ({
-                ...prev,
-                [category]: !prev[category]
-              }))}
-            />
-          ))}
-        </div>
-        
-        <div className="p-4 border-t border-border space-y-2">
-          <Button 
-            onClick={updatePipelineFromGraph}
-            className="w-full"
-            size="sm"
-          >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Update Pipeline
-          </Button>
-          <Button 
-            onClick={deleteSelectedElements}
-            className="w-full"
-            variant="destructive"
-            size="sm"
-          >
-            <Scissors className="h-4 w-4 mr-2" />
-            Delete Selected
-          </Button>
-          <Button 
-            onClick={() => {
-              setNodes([]);
-              setEdges([]);
-            }}
-            className="w-full"
-            variant="outline"
-            size="sm"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Clear Canvas
-          </Button>
-          <div className="text-xs text-muted-foreground text-center pt-2">
-            Press Delete/Backspace to remove selected items
-          </div>
-        </div>
+    <div className={`h-full flex relative ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''} ${isDarkMode ? 'dark' : ''}`}>
+      {/* Floating Toolbar */}
+      <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-background/95 backdrop-blur-sm border border-border/50 rounded-xl p-2 shadow-lg">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowPalette(!showPalette)}
+          className={`h-8 w-8 p-0 ${showPalette ? 'bg-primary text-primary-foreground' : ''}`}
+        >
+          <Package className="h-4 w-4" />
+        </Button>
+        <Separator orientation="vertical" className="h-4" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowGrid(!showGrid)}
+          className={`h-8 w-8 p-0 ${showGrid ? 'bg-primary text-primary-foreground' : ''}`}
+        >
+          <Grid3X3 className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setSnapToGrid(!snapToGrid)}
+          className={`h-8 w-8 p-0 ${snapToGrid ? 'bg-primary text-primary-foreground' : ''}`}
+        >
+          <Move className="h-4 w-4" />
+        </Button>
+        <Separator orientation="vertical" className="h-4" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className="h-8 w-8 p-0"
+        >
+          {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          className="h-8 w-8 p-0"
+        >
+          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </Button>
+        <Separator orientation="vertical" className="h-4" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={deleteSelectedElements}
+          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
 
-      {/* Main Canvas */}
-      <div className="flex-1 relative">
-        <div ref={reactFlowWrapper} className="h-full">
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            onNodesDelete={onNodesDelete}
-            onEdgesDelete={onEdgesDelete}
-            nodeTypes={nodeTypes}
-            fitView
-            className={`${isDarkMode ? 'bg-gray-900' : 'bg-muted/30'}`}
-            attributionPosition="bottom-left"
-            deleteKeyCode="Delete"
-          >
-            <Controls className="bg-background border border-border" />
-            <MiniMap 
-              className="bg-background border border-border"
-              nodeColor={() => '#6366f1'}
-            />
-            <Background 
-              gap={20} 
-              size={1} 
-              className={`${isDarkMode ? 'opacity-30' : 'opacity-50'}`} 
-            />
-            
-            {/* Empty state */}
-            {nodes.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="text-center p-8">
-                  <div className="mx-auto mb-4 w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                    <FolderOpen className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg font-medium mb-2">Enterprise CI/CD Pipeline Builder</h3>
-                  <p className="text-muted-foreground mb-4">Drag components from the left sidebar to create Jenkins-level pipelines</p>
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    <div>• GitHub, GitLab, Bitbucket integration</div>
-                    <div>• Docker, Helm, Kubernetes deployments</div>
-                    <div>• OWASP ZAP, Snyk security scanning</div>
-                    <div>• Prometheus, Grafana, DataDog monitoring</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </ReactFlow>
+      {/* Left Sidebar - Component Palette */}
+      <div className={`w-80 bg-background/80 backdrop-blur-sm border-r border-border/50 flex flex-col overflow-hidden transition-all duration-300 ${
+        showPalette ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="p-4 border-b border-border/50">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Layers className="h-5 w-5 text-primary" />
+              Components
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPalette(false)}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground">Drag components to the canvas</p>
         </div>
+
+        <ScrollArea className="flex-1">
+          <div className="p-4 space-y-3">
+            {Object.entries(componentCategories).map(([categoryName, categoryData]) => (
+              <div key={categoryName} className="space-y-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => setOpenCategories(prev => ({ ...prev, [categoryName]: !prev[categoryName] }))}
+                  className="w-full justify-between p-2 h-auto font-medium text-sm hover:bg-accent/50"
+                >
+                  <span className="flex items-center gap-2">
+                    <categoryData.icon className="h-4 w-4" />
+                    {categoryName}
+                  </span>
+                  {openCategories[categoryName] ? 
+                    <ChevronDown className="h-4 w-4" /> : 
+                    <ChevronRight className="h-4 w-4" />
+                  }
+                </Button>
+                
+                {openCategories[categoryName] && (
+                  <div className="pl-2 space-y-1">
+                    {categoryData.components.map((component) => (
+                      <DraggableNode key={component.type} component={component} color={categoryData.color} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* Main Canvas Area */}
+      <div className="flex-1 relative bg-gradient-to-br from-background to-muted/20">
+        <ReactFlow
+          ref={reactFlowWrapper}
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodesDelete={onNodesDelete}
+          onEdgesDelete={onEdgesDelete}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          nodeTypes={nodeTypes}
+          snapToGrid={snapToGrid}
+          snapGrid={[20, 20]}
+          connectionLineStyle={{ stroke: '#6366f1', strokeWidth: 2 }}
+          connectionLineComponent={({ fromX, fromY, toX, toY }) => (
+            <g>
+              <defs>
+                <marker
+                  id="connectionline-arrow"
+                  markerWidth="10"
+                  markerHeight="10"
+                  refX="5"
+                  refY="3"
+                  orient="auto"
+                  markerUnits="strokeWidth"
+                >
+                  <polygon points="0,0 0,6 9,3" fill="#6366f1" />
+                </marker>
+              </defs>
+              <path
+                d={`M${fromX},${fromY} C${fromX + 50},${fromY} ${toX - 50},${toY} ${toX},${toY}`}
+                stroke="#6366f1"
+                strokeWidth="2"
+                fill="none"
+                strokeDasharray="5,5"
+                markerEnd="url(#connectionline-arrow)"
+              />
+            </g>
+          )}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+          minZoom={0.1}
+          maxZoom={2}
+          attributionPosition="bottom-left"
+          className={`transition-all duration-300 ${isDarkMode ? 'react-flow-dark' : ''}`}
+        >
+          <Controls 
+            className="!bg-background/95 !backdrop-blur-sm !border-border/50 !shadow-lg !rounded-xl"
+            showInteractive={false}
+          />
+          <MiniMap 
+            className="!bg-background/95 !backdrop-blur-sm !border-border/50 !shadow-lg !rounded-xl"
+            nodeStrokeColor={(n) => n.selected ? '#6366f1' : '#e5e7eb'}
+            nodeColor={(n) => n.selected ? '#6366f1' : '#f3f4f6'}
+            nodeBorderRadius={8}
+          />
+          {showGrid && (
+            <Background 
+              variant={BackgroundVariant.Dots}
+              gap={20}
+              size={1}
+              color={isDarkMode ? "#374151" : "#e5e7eb"}
+            />
+          )}
+        </ReactFlow>
+
+        {/* Quick Actions - Floating Bottom Bar */}
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
+          <div className="flex items-center gap-2 bg-background/95 backdrop-blur-sm border border-border/50 rounded-xl p-2 shadow-lg">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setNodes([]);
+                setEdges([]);
+              }}
+              className="h-8 px-3 text-sm"
+            >
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Clear All
+            </Button>
+            <Separator orientation="vertical" className="h-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const viewport = getViewport();
+                setViewport({ x: 0, y: 0, zoom: 0.8 }, { duration: 300 });
+              }}
+              className="h-8 px-3 text-sm"
+            >
+              <ZoomIn className="h-4 w-4 mr-1" />
+              Reset View
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={updatePipelineFromGraph}
+              className="h-8 px-3 text-sm"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              Apply
+            </Button>
+          </div>
       </div>
     </div>
   );
