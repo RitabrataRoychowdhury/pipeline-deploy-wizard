@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import PipelineCard from "@/components/PipelineCard";
 import StatsCard from "@/components/StatsCard";
 import RecentBuilds from "@/components/RecentBuilds";
+import { Scene3D } from "@/components/3d/Scene3D";
 import { Activity, GitBranch, CheckCircle, Clock, Plus, Rocket, Shield, Zap, Users, ArrowRight, Star, Github, Twitter, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -189,6 +190,12 @@ retry_count: 0`;
       {/* Hero Section */}
       <section ref={heroRef} className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-20">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        
+        {/* 3D Background */}
+        <div className="absolute inset-0 z-0">
+          <Scene3D />
+        </div>
+        
         <div className="container mx-auto px-6 text-center relative z-10">
           <div className="floating-element">
             <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm">
@@ -217,10 +224,10 @@ retry_count: 0`;
           </div>
         </div>
         
-        {/* Floating decorative elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-primary/20 rounded-full animate-bounce" style={{animationDelay: '0s', animationDuration: '3s'}}></div>
-        <div className="absolute bottom-20 right-10 w-16 h-16 bg-secondary/20 rounded-full animate-bounce" style={{animationDelay: '1s', animationDuration: '4s'}}></div>
-        <div className="absolute top-1/2 left-1/4 w-8 h-8 bg-accent/30 rounded-full animate-bounce" style={{animationDelay: '2s', animationDuration: '3.5s'}}></div>
+        {/* 3D Interactive Area */}
+        <div className="absolute top-1/2 right-10 w-32 h-32 transform -translate-y-1/2 opacity-50">
+          <Scene3D showTunnel={true} />
+        </div>
       </section>
 
       {/* Features Section */}
@@ -322,11 +329,16 @@ retry_count: 0`;
         </div>
       </section>
 
-      {/* Dashboard Preview */}
+        {/* Dashboard Preview */}
       <main className="container mx-auto px-6 py-20 space-y-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 relative">
           <h2 className="text-3xl font-bold mb-4">Live Dashboard Preview</h2>
           <p className="text-muted-foreground">Experience the power of our current CI/CD platform</p>
+          
+          {/* Mini 3D showcase */}
+          <div className="absolute top-0 right-0 w-24 h-24 opacity-40">
+            <Scene3D />
+          </div>
         </div>
         
         {/* Stats Overview */}
