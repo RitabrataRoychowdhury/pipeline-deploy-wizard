@@ -1,13 +1,10 @@
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, PerspectiveCamera } from '@react-three/drei';
 import Navbar from "@/components/Navbar";
 import PipelineCard from "@/components/PipelineCard";
 import StatsCard from "@/components/StatsCard";
 import RecentBuilds from "@/components/RecentBuilds";
-import { InteractiveEarth } from "@/components/3d/InteractiveEarth";
-import { Dashboard3D } from "@/components/3d/Dashboard3D";
+import { Safe3DScene } from "@/components/3d/Safe3DScene";
 import { WaitlistManager, addToRustCIWaitlist } from "@/components/WaitlistManager";
 import { Activity, GitBranch, CheckCircle, Clock, Plus, Rocket, Shield, Zap, Users, ArrowRight, Star, Github, Twitter, Mail, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -233,44 +230,12 @@ retry_count: 0`;
         
         {/* 3D Interactive Earth */}
         <div className="absolute inset-0 z-0">
-          <Canvas
-            gl={{ antialias: true, alpha: true }}
-            onCreated={({ gl }) => {
-              gl.setClearColor('#000000', 0);
-            }}
-          >
-            <PerspectiveCamera makeDefault position={[0, 0, 8]} />
-            
-            {/* Lighting */}
-            <ambientLight intensity={0.6} />
-            <pointLight position={[10, 10, 10]} intensity={1.5} />
-            <pointLight position={[-10, -10, -10]} intensity={0.8} color="#00ff88" />
-            <pointLight position={[0, 10, -10]} intensity={1} color="#ff6b35" />
-            
-            <Suspense fallback={null}>
-              <Environment preset="city" />
-              
-              <InteractiveEarth 
-                onSphereClick={handleSphereClick}
-                mousePosition={mousePosition}
-                showDashboard={showDashboard}
-              />
-              
-              <Dashboard3D 
-                visible={showDashboard}
-                stats={stats}
-              />
-              
-              <OrbitControls
-                enableZoom={false}
-                enablePan={false}
-                autoRotate={!showDashboard}
-                autoRotateSpeed={showDashboard ? 0 : 0.3}
-                maxPolarAngle={Math.PI / 2}
-                minPolarAngle={Math.PI / 2}
-              />
-            </Suspense>
-          </Canvas>
+          <Safe3DScene
+            onSphereClick={handleSphereClick}
+            mousePosition={mousePosition}
+            showDashboard={showDashboard}
+            stats={stats}
+          />
         </div>
         
         <div className="container mx-auto px-6 text-center relative z-10">

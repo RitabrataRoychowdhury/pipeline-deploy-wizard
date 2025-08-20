@@ -1,7 +1,7 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Sphere, Points, PointMaterial } from '@react-three/drei';
-import { Mesh, Vector3, BufferGeometry, Float32BufferAttribute } from 'three';
+import { Sphere } from '@react-three/drei';
+import { Mesh, Vector3 } from 'three';
 import * as THREE from 'three';
 
 interface InteractiveEarthProps {
@@ -12,47 +12,19 @@ interface InteractiveEarthProps {
 
 export const InteractiveEarth = ({ onSphereClick, mousePosition, showDashboard }: InteractiveEarthProps) => {
   const earthRef = useRef<Mesh>(null);
-  const dotsRef = useRef<THREE.Points>(null);
-  const trianglesRef = useRef<THREE.Points>(null);
   const [hovered, setHovered] = useState(false);
   const { size } = useThree();
 
-  // Generate random points for earth surface
-  const earthPoints = new Float32Array(500 * 3);
-  const trianglePoints = new Float32Array(100 * 3);
-  
-  for (let i = 0; i < 500; i++) {
-    const phi = Math.acos(-1 + (2 * i) / 500);
-    const theta = Math.sqrt(500 * Math.PI) * phi;
-    const radius = 2.1;
-    
-    earthPoints[i * 3] = radius * Math.cos(theta) * Math.sin(phi);
-    earthPoints[i * 3 + 1] = radius * Math.sin(theta) * Math.sin(phi);
-    earthPoints[i * 3 + 2] = radius * Math.cos(phi);
-  }
-
-  for (let i = 0; i < 100; i++) {
-    const phi = Math.acos(-1 + (2 * i) / 100);
-    const theta = Math.sqrt(100 * Math.PI) * phi;
-    const radius = 2.2;
-    
-    trianglePoints[i * 3] = radius * Math.cos(theta) * Math.sin(phi);
-    trianglePoints[i * 3 + 1] = radius * Math.sin(theta) * Math.sin(phi);
-    trianglePoints[i * 3 + 2] = radius * Math.cos(phi);
-  }
-
   useFrame((state) => {
-    if (!earthRef.current || !dotsRef.current || !trianglesRef.current) return;
+    if (!earthRef.current) return;
     
     const time = state.clock.getElapsedTime();
     
     // Base rotation
     earthRef.current.rotation.y = time * 0.1;
-    dotsRef.current.rotation.y = time * 0.15;
-    trianglesRef.current.rotation.y = time * 0.08;
 
     // Mouse vibration effect
-    if (hovered) {
+    if (hovered && size.width > 0) {
       const mouseX = (mousePosition.x / size.width) * 2 - 1;
       const mouseY = -(mousePosition.y / size.height) * 2 + 1;
       
@@ -63,14 +35,9 @@ export const InteractiveEarth = ({ onSphereClick, mousePosition, showDashboard }
       earthRef.current.position.x = vibrationX;
       earthRef.current.position.y = vibrationY;
       earthRef.current.position.z = vibrationZ;
-      
-      dotsRef.current.position.x = vibrationX * 1.1;
-      dotsRef.current.position.y = vibrationY * 1.1;
-      dotsRef.current.position.z = vibrationZ * 1.1;
     } else {
       // Smooth return to center
       earthRef.current.position.lerp(new Vector3(0, 0, 0), 0.05);
-      dotsRef.current.position.lerp(new Vector3(0, 0, 0), 0.05);
     }
 
     // Dashboard transformation
@@ -88,7 +55,7 @@ export const InteractiveEarth = ({ onSphereClick, mousePosition, showDashboard }
       {/* Main Earth Sphere */}
       <Sphere
         ref={earthRef}
-        args={[2, 64, 64]}
+        args={[2, 32, 32]}
         onClick={onSphereClick}
         onPointerEnter={() => setHovered(true)}
         onPointerLeave={() => setHovered(false)}
@@ -102,46 +69,8 @@ export const InteractiveEarth = ({ onSphereClick, mousePosition, showDashboard }
         />
       </Sphere>
 
-      {/* Glowing Dots */}
-      <Points ref={dotsRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={earthPoints.length / 3}
-            array={earthPoints}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <PointMaterial
-          size={0.05}
-          color="#00d2ff"
-          transparent
-          opacity={0.8}
-          sizeAttenuation
-        />
-      </Points>
-
-      {/* Flying Triangles */}
-      <Points ref={trianglesRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={trianglePoints.length / 3}
-            array={trianglePoints}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <PointMaterial
-          size={0.08}
-          color="#ff6b35"
-          transparent
-          opacity={0.6}
-          sizeAttenuation
-        />
-      </Points>
-
       {/* Atmosphere Glow */}
-      <Sphere args={[2.3, 32, 32]}>
+      <Sphere args={[2.3, 16, 16]}>
         <meshBasicMaterial
           color="#00d2ff"
           transparent
