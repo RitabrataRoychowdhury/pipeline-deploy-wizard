@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { PageTransition } from "@/components/PageTransition";
 import Index from "./pages/Index";
 import Welcome from "./pages/Welcome";
+import Dashboard from "./pages/Dashboard";
 import Pipelines from "./pages/Pipelines";
 import Repositories from "./pages/Repositories";
 import Settings from "./pages/Settings";
@@ -29,7 +30,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<PageTransition><Welcome /></PageTransition>} />
-            <Route path="/dashboard" element={<PageTransition><Index /></PageTransition>} />
+            <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
             <Route path="/pipelines" element={<PageTransition><Pipelines /></PageTransition>} />
             <Route path="/pipelines/builder" element={<PageTransition><PipelineBuilder /></PageTransition>} />
             <Route path="/repositories" element={<PageTransition><Repositories /></PageTransition>} />
