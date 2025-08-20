@@ -1,11 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, Environment, PerspectiveCamera } from '@react-three/drei';
 import Navbar from "@/components/Navbar";
 import PipelineCard from "@/components/PipelineCard";
 import StatsCard from "@/components/StatsCard";
 import RecentBuilds from "@/components/RecentBuilds";
-import { Scene3D } from "@/components/3d/Scene3D";
-import { Activity, GitBranch, CheckCircle, Clock, Plus, Rocket, Shield, Zap, Users, ArrowRight, Star, Github, Twitter, Mail } from "lucide-react";
+import { InteractiveEarth } from "@/components/3d/InteractiveEarth";
+import { Dashboard3D } from "@/components/3d/Dashboard3D";
+import { WaitlistManager, addToRustCIWaitlist } from "@/components/WaitlistManager";
+import { Activity, GitBranch, CheckCircle, Clock, Plus, Rocket, Shield, Zap, Users, ArrowRight, Star, Github, Twitter, Mail, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +30,9 @@ const Index = () => {
   const [email, setEmail] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [showWaitlistManager, setShowWaitlistManager] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   const registrationRef = useRef<HTMLDivElement>(null);
@@ -53,6 +60,21 @@ const Index = () => {
     // Trigger animations on mount
     setIsVisible(true);
 
+    // Mouse position tracking
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    // Scroll-triggered dashboard animation
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      if (scrollY > 800 && !showDashboard) {
+        setShowDashboard(true);
+      } else if (scrollY <= 800 && showDashboard) {
+        setShowDashboard(false);
+      }
+    };
+
     // Features animation on scroll
     const observer = new IntersectionObserver(
       (entries) => {
@@ -71,12 +93,22 @@ const Index = () => {
     if (featuresRef.current) observer.observe(featuresRef.current);
     if (registrationRef.current) observer.observe(registrationRef.current);
 
-    return () => observer.disconnect();
-  }, []);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [showDashboard]);
 
   const handleEmailRegistration = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+
+    // Add to waitlist using manager
+    addToRustCIWaitlist(email, 'hero');
 
     // Animate registration form
     const form = document.querySelector('.registration-form');
@@ -91,6 +123,14 @@ const Index = () => {
         description: "You'll be notified when RustCI and Valkyrie Protocol launch!",
       });
     }, 600);
+  };
+
+  const handleSphereClick = () => {
+    setShowDashboard(!showDashboard);
+    toast({
+      title: showDashboard ? "Back to Earth View" : "Welcome to Dashboard! 🚀",
+      description: showDashboard ? "Returning to earth sphere view" : "Explore the 3D dashboard experience",
+    });
   };
 
   const handleTriggerPipeline = async (pipelineName: string) => {
@@ -187,19 +227,56 @@ retry_count: 0`;
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Hero Section */}
-      <section ref={heroRef} className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-20">
+      {/* Hero Section with Interactive 3D Earth */}
+      <section ref={heroRef} className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-20 min-h-screen flex items-center">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         
-        {/* 3D Background */}
+        {/* 3D Interactive Earth */}
         <div className="absolute inset-0 z-0">
-          <Scene3D />
+          <Canvas
+            gl={{ antialias: true, alpha: true }}
+            onCreated={({ gl }) => {
+              gl.setClearColor('#000000', 0);
+            }}
+          >
+            <PerspectiveCamera makeDefault position={[0, 0, 8]} />
+            
+            {/* Lighting */}
+            <ambientLight intensity={0.6} />
+            <pointLight position={[10, 10, 10]} intensity={1.5} />
+            <pointLight position={[-10, -10, -10]} intensity={0.8} color="#00ff88" />
+            <pointLight position={[0, 10, -10]} intensity={1} color="#ff6b35" />
+            
+            <Suspense fallback={null}>
+              <Environment preset="city" />
+              
+              <InteractiveEarth 
+                onSphereClick={handleSphereClick}
+                mousePosition={mousePosition}
+                showDashboard={showDashboard}
+              />
+              
+              <Dashboard3D 
+                visible={showDashboard}
+                stats={stats}
+              />
+              
+              <OrbitControls
+                enableZoom={false}
+                enablePan={false}
+                autoRotate={!showDashboard}
+                autoRotateSpeed={showDashboard ? 0 : 0.3}
+                maxPolarAngle={Math.PI / 2}
+                minPolarAngle={Math.PI / 2}
+              />
+            </Suspense>
+          </Canvas>
         </div>
         
         <div className="container mx-auto px-6 text-center relative z-10">
           <div className="floating-element">
             <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm">
-              🚀 Coming Soon: Next-Gen CI/CD Platform
+              🚀 Click the Earth to explore 3D Dashboard
             </Badge>
           </div>
           
@@ -222,11 +299,26 @@ retry_count: 0`;
               View on GitHub
             </Button>
           </div>
-        </div>
-        
-        {/* 3D Interactive Area */}
-        <div className="absolute top-1/2 right-10 w-32 h-32 transform -translate-y-1/2 opacity-50">
-          <Scene3D showTunnel={true} />
+
+          {/* Waitlist Manager Toggle */}
+          <div className="mt-8">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setShowWaitlistManager(!showWaitlistManager)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Manage Waitlist
+            </Button>
+          </div>
+
+          {/* Waitlist Manager */}
+          {showWaitlistManager && (
+            <div className="mt-6 flex justify-center">
+              <WaitlistManager />
+            </div>
+          )}
         </div>
       </section>
 
@@ -332,13 +424,22 @@ retry_count: 0`;
         {/* Dashboard Preview */}
       <main className="container mx-auto px-6 py-20 space-y-8">
         <div className="text-center mb-12 relative">
-          <h2 className="text-3xl font-bold mb-4">Live Dashboard Preview</h2>
-          <p className="text-muted-foreground">Experience the power of our current CI/CD platform</p>
+          <h2 className="text-3xl font-bold mb-4">
+            {showDashboard ? "3D Dashboard Experience" : "Live Dashboard Preview"}
+          </h2>
+          <p className="text-muted-foreground">
+            {showDashboard 
+              ? "You're viewing the dashboard in 3D mode! Scroll up to return to Earth view."
+              : "Experience the power of our current CI/CD platform - or scroll down for 3D view!"
+            }
+          </p>
           
-          {/* Mini 3D showcase */}
-          <div className="absolute top-0 right-0 w-24 h-24 opacity-40">
-            <Scene3D />
-          </div>
+          {showDashboard && (
+            <Badge variant="outline" className="mt-4">
+              <Zap className="mr-2 h-4 w-4" />
+              3D Mode Active
+            </Badge>
+          )}
         </div>
         
         {/* Stats Overview */}
