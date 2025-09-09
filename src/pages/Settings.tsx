@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
+import NotificationHub from "@/components/NotificationHub";
+import { EnhancedCard, EnhancedCardHeader, EnhancedCardTitle, EnhancedCardContent } from "@/components/ui/enhanced-card";
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -17,10 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Settings = () => {
@@ -83,40 +83,41 @@ const Settings = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="general" className="flex items-center gap-2">
+        <Tabs defaultValue="general" className="space-y-8">
+          <TabsList className="grid w-full grid-cols-5 bg-muted/50 p-1 h-auto">
+            <TabsTrigger value="general" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <SettingsIcon className="h-4 w-4" />
-              General
+              <span className="hidden sm:inline">General</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-2">
+            <TabsTrigger value="security" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Shield className="h-4 w-4" />
-              Security
+              <span className="hidden sm:inline">Security</span>
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Bell className="h-4 w-4" />
-              Notifications
+              <span className="hidden sm:inline">Notifications</span>
             </TabsTrigger>
-            <TabsTrigger value="runners" className="flex items-center gap-2">
+            <TabsTrigger value="runners" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Server className="h-4 w-4" />
-              Runners
+              <span className="hidden sm:inline">Runners</span>
             </TabsTrigger>
-            <TabsTrigger value="database" className="flex items-center gap-2">
+            <TabsTrigger value="database" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Database className="h-4 w-4" />
-              Database
+              <span className="hidden sm:inline">Database</span>
             </TabsTrigger>
           </TabsList>
 
           {/* General Settings */}
           <TabsContent value="general">
-            <Card>
-              <CardHeader>
-                <CardTitle>General Configuration</CardTitle>
-                <CardDescription>
-                  Basic settings for your RustCI instance
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <EnhancedCard variant="elevated">
+              <EnhancedCardHeader>
+                <EnhancedCardTitle className="flex items-center space-x-2">
+                  <SettingsIcon className="h-5 w-5" />
+                  <span>General Configuration</span>
+                </EnhancedCardTitle>
+                <p className="text-muted-foreground">Basic settings for your RustCI instance</p>
+              </EnhancedCardHeader>
+              <EnhancedCardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="instance-name">Instance Name</Label>
@@ -158,25 +159,26 @@ const Settings = () => {
                 <Separator />
                 
                 <div className="flex justify-end">
-                  <Button onClick={() => handleSave("General")}>
+                  <Button onClick={() => handleSave("General")} className="bg-gradient-primary hover:opacity-90">
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </EnhancedCardContent>
+            </EnhancedCard>
           </TabsContent>
 
           {/* Security Settings */}
           <TabsContent value="security">
-            <Card>
-              <CardHeader>
-                <CardTitle>Security Configuration</CardTitle>
-                <CardDescription>
-                  Manage authentication and security settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <EnhancedCard variant="elevated">
+              <EnhancedCardHeader>
+                <EnhancedCardTitle className="flex items-center space-x-2">
+                  <Shield className="h-5 w-5" />
+                  <span>Security Configuration</span>
+                </EnhancedCardTitle>
+                <p className="text-muted-foreground">Manage authentication and security settings</p>
+              </EnhancedCardHeader>
+              <EnhancedCardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
@@ -231,113 +233,31 @@ const Settings = () => {
                 <Separator />
                 
                 <div className="flex justify-end">
-                  <Button onClick={() => handleSave("Security")}>
+                  <Button onClick={() => handleSave("Security")} className="bg-gradient-primary hover:opacity-90">
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </EnhancedCardContent>
+            </EnhancedCard>
           </TabsContent>
 
           {/* Notifications Settings */}
           <TabsContent value="notifications">
-            <Card>
-              <CardHeader>
-                <CardTitle>Notification Settings</CardTitle>
-                <CardDescription>
-                  Configure how you receive pipeline notifications
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Email Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Receive email alerts for pipeline events
-                      </p>
-                    </div>
-                    <Switch
-                      checked={settings.emailNotifications}
-                      onCheckedChange={(checked) => handleInputChange("emailNotifications", checked)}
-                    />
-                  </div>
-                  
-                  {settings.emailNotifications && (
-                    <div className="space-y-2 ml-4">
-                      <Label htmlFor="notification-email">Notification Email</Label>
-                      <Input
-                        id="notification-email"
-                        type="email"
-                        value={settings.notificationEmail}
-                        onChange={(e) => handleInputChange("notificationEmail", e.target.value)}
-                        placeholder="admin@example.com"
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Slack Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Send notifications to Slack workspace
-                      </p>
-                    </div>
-                    <Switch
-                      checked={settings.slackNotifications}
-                      onCheckedChange={(checked) => handleInputChange("slackNotifications", checked)}
-                    />
-                  </div>
-                  
-                  {settings.slackNotifications && (
-                    <div className="space-y-2 ml-4">
-                      <Label htmlFor="slack-webhook">Slack Webhook URL</Label>
-                      <Input
-                        id="slack-webhook"
-                        value={settings.slackWebhook}
-                        onChange={(e) => handleInputChange("slackWebhook", e.target.value)}
-                        placeholder="https://hooks.slack.com/services/..."
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Webhook Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Send HTTP webhooks for pipeline events
-                      </p>
-                    </div>
-                    <Switch
-                      checked={settings.webhookNotifications}
-                      onCheckedChange={(checked) => handleInputChange("webhookNotifications", checked)}
-                    />
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                <div className="flex justify-end">
-                  <Button onClick={() => handleSave("Notifications")}>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <NotificationHub />
           </TabsContent>
 
           {/* Runners Settings */}
           <TabsContent value="runners">
-            <Card>
-              <CardHeader>
-                <CardTitle>Runner Configuration</CardTitle>
-                <CardDescription>
-                  Configure build runners and execution environment
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <EnhancedCard variant="elevated">
+              <EnhancedCardHeader>
+                <EnhancedCardTitle className="flex items-center space-x-2">
+                  <Server className="h-5 w-5" />
+                  <span>Runner Configuration</span>
+                </EnhancedCardTitle>
+                <p className="text-muted-foreground">Configure build runners and execution environment</p>
+              </EnhancedCardHeader>
+              <EnhancedCardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="max-builds">Max Concurrent Builds</Label>
@@ -389,25 +309,26 @@ const Settings = () => {
                 <Separator />
                 
                 <div className="flex justify-end">
-                  <Button onClick={() => handleSave("Runners")}>
+                  <Button onClick={() => handleSave("Runners")} className="bg-gradient-primary hover:opacity-90">
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </EnhancedCardContent>
+            </EnhancedCard>
           </TabsContent>
 
           {/* Database Settings */}
           <TabsContent value="database">
-            <Card>
-              <CardHeader>
-                <CardTitle>Database Configuration</CardTitle>
-                <CardDescription>
-                  Manage database connection and backup settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <EnhancedCard variant="elevated">
+              <EnhancedCardHeader>
+                <EnhancedCardTitle className="flex items-center space-x-2">
+                  <Database className="h-5 w-5" />
+                  <span>Database Configuration</span>
+                </EnhancedCardTitle>
+                <p className="text-muted-foreground">Manage database connection and backup settings</p>
+              </EnhancedCardHeader>
+              <EnhancedCardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="db-host">Database Host</Label>
@@ -467,13 +388,13 @@ const Settings = () => {
                 <Separator />
                 
                 <div className="flex justify-end">
-                  <Button onClick={() => handleSave("Database")}>
+                  <Button onClick={() => handleSave("Database")} className="bg-gradient-primary hover:opacity-90">
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </EnhancedCardContent>
+            </EnhancedCard>
           </TabsContent>
         </Tabs>
       </main>

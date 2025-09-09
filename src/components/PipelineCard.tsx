@@ -1,7 +1,7 @@
-import { Card } from "@/components/ui/card";
+import { EnhancedCard } from "@/components/ui/enhanced-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Clock, CheckCircle, XCircle, GitBranch, Calendar } from "lucide-react";
+import { Play, Clock, CheckCircle, XCircle, GitBranch, Calendar, MoreHorizontal, Settings } from "lucide-react";
 
 interface PipelineCardProps {
   name: string;
@@ -38,62 +38,141 @@ const PipelineCard = ({
   const getStatusBadge = () => {
     switch (status) {
       case "success":
-        return <Badge variant="secondary" className="bg-success/10 text-success border-success/20">Success</Badge>;
+        return (
+          <Badge className="bg-gradient-success text-success-foreground border-0 shadow-success/20 shadow-sm">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Success
+          </Badge>
+        );
       case "running":
-        return <Badge variant="secondary" className="bg-running/10 text-running border-running/20">Running</Badge>;
+        return (
+          <Badge className="bg-gradient-warning text-warning-foreground border-0 shadow-warning/20 shadow-sm">
+            <Clock className="h-3 w-3 mr-1 animate-spin" />
+            Running
+          </Badge>
+        );
       case "failed":
-        return <Badge variant="destructive">Failed</Badge>;
+        return (
+          <Badge variant="destructive" className="border-0 shadow-sm">
+            <XCircle className="h-3 w-3 mr-1" />
+            Failed
+          </Badge>
+        );
       default:
-        return <Badge variant="secondary" className="text-muted-foreground">Idle</Badge>;
+        return (
+          <Badge variant="outline" className="border-border/50">
+            <Clock className="h-3 w-3 mr-1" />
+            Idle
+          </Badge>
+        );
+    }
+  };
+
+  const getCardVariant = () => {
+    switch (status) {
+      case "success":
+        return "success";
+      case "running":
+        return "warning";
+      case "failed":
+        return "default";
+      default:
+        return "default";
     }
   };
 
   return (
-    <Card className="p-6 bg-gradient-card border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-primary/10 hover:shadow-lg">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          {getStatusIcon()}
-          <div>
-            <h3 className="font-semibold text-foreground">{name}</h3>
-            <p className="text-sm text-muted-foreground">{description}</p>
+    <EnhancedCard 
+      variant={getCardVariant() as any} 
+      interactive
+      className="group relative overflow-hidden"
+    >
+      {/* Status indicator bar */}
+      <div className={`absolute top-0 left-0 right-0 h-1 ${
+        status === "success" ? "bg-gradient-success" :
+        status === "running" ? "bg-gradient-warning" :
+        status === "failed" ? "bg-gradient-to-r from-destructive to-destructive/70" :
+        "bg-border"
+      }`} />
+
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start space-x-4">
+          <div className={`p-3 rounded-xl ${
+            status === "success" ? "bg-success/10 text-success" :
+            status === "running" ? "bg-warning/10 text-warning" :
+            status === "failed" ? "bg-destructive/10 text-destructive" :
+            "bg-muted text-muted-foreground"
+          }`}>
+            {getStatusIcon()}
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
+              {name}
+            </h3>
+            <p className="text-muted-foreground leading-relaxed">{description}</p>
           </div>
         </div>
-        {getStatusBadge()}
+        
+        <div className="flex items-center space-x-2">
+          {getStatusBadge()}
+          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-1">
-            <GitBranch className="h-3 w-3" />
-            <span>{repository}/{branch}</span>
+      {/* Repository and timing info */}
+      <div className="flex items-center justify-between text-sm mb-6">
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-2 text-muted-foreground">
+            <div className="p-1 bg-muted rounded">
+              <GitBranch className="h-3 w-3" />
+            </div>
+            <span className="font-medium">{repository}</span>
+            <span className="text-primary">/{branch}</span>
           </div>
           {lastRun && (
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2 text-muted-foreground">
               <Calendar className="h-3 w-3" />
-              <span>{lastRun}</span>
+              <span>Last run {lastRun}</span>
             </div>
           )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+      {/* Actions */}
+      <div className="flex items-center justify-between pt-4 border-t border-border/50">
+        <div className="flex items-center space-x-3">
           <Button
             size="sm"
             onClick={onTrigger}
-            className="bg-primary hover:bg-primary/90"
+            className={`${
+              status === "running" 
+                ? "bg-warning/20 text-warning hover:bg-warning/30" 
+                : "bg-gradient-primary hover:opacity-90 shadow-primary/30 shadow-sm"
+            } transition-all duration-200`}
             disabled={status === "running"}
           >
-            <Play className="h-3 w-3 mr-1" />
-            {status === "running" ? "Running..." : "Trigger"}
+            <Play className={`h-3 w-3 mr-2 ${status === "running" ? "animate-pulse" : ""}`} />
+            {status === "running" ? "Running..." : "Trigger Build"}
+          </Button>
+          
+          <Button variant="outline" size="sm" className="hover:bg-muted/50">
+            <Settings className="h-3 w-3 mr-2" />
+            Configure
           </Button>
         </div>
         
-        <div className="text-xs text-muted-foreground">
-          Manual trigger • Shell steps
+        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+          <Badge variant="outline" className="px-2 py-1">
+            Manual
+          </Badge>
+          <Badge variant="outline" className="px-2 py-1">
+            Shell
+          </Badge>
         </div>
       </div>
-    </Card>
+    </EnhancedCard>
   );
 };
 

@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+import { EnhancedCard } from "@/components/ui/enhanced-card";
 import { LucideIcon } from "lucide-react";
 
 interface StatsCardProps {
@@ -42,26 +42,62 @@ const StatsCard = ({
     }
   };
 
+  const getGradient = () => {
+    switch (color) {
+      case "success":
+        return "bg-gradient-success";
+      case "warning":
+        return "bg-gradient-warning";
+      case "info":
+        return "bg-gradient-info";
+      default:
+        return "bg-gradient-primary";
+    }
+  };
+
   return (
-    <Card className="p-6 bg-gradient-card border-border/50 hover:border-primary/30 transition-all duration-300">
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <div className="flex items-baseline space-x-2">
-            <p className="text-2xl font-bold text-foreground">{value}</p>
+    <EnhancedCard 
+      variant={color as any}
+      interactive
+      className="group relative overflow-hidden"
+    >
+      {/* Gradient accent */}
+      <div className={`absolute top-0 left-0 right-0 h-1 ${getGradient()}`} />
+      
+      <div className="flex items-start justify-between">
+        <div className="space-y-3 flex-1">
+          <div className="flex items-center space-x-2">
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              {title}
+            </p>
             {trend && (
-              <span className={`text-xs font-medium ${getTrendColor()}`}>
-                {trend === "up" ? "↗" : trend === "down" ? "↘" : "→"}
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                trend === "up" 
+                  ? "bg-success/10 text-success" 
+                  : trend === "down" 
+                  ? "bg-destructive/10 text-destructive" 
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                {trend === "up" ? "↗ UP" : trend === "down" ? "↘ DOWN" : "→ STABLE"}
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">{description}</p>
+          
+          <div className="space-y-2">
+            <p className="text-3xl font-bold text-foreground group-hover:text-primary transition-colors">
+              {value}
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {description}
+            </p>
+          </div>
         </div>
-        <div className={`p-3 rounded-lg ${getColorClasses()}`}>
+        
+        <div className={`p-4 rounded-xl ${getColorClasses()} group-hover:scale-110 transition-transform duration-200`}>
           <Icon className="h-6 w-6" />
         </div>
       </div>
-    </Card>
+    </EnhancedCard>
   );
 };
 
