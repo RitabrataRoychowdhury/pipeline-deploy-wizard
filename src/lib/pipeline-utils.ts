@@ -1,4 +1,5 @@
 import { type Node, type Edge } from '@xyflow/react';
+import { componentDefinitions } from './component-definitions';
 
 export interface PipelineNode extends Node {
   data: {
@@ -145,6 +146,11 @@ export const generateEdgeId = (sourceId: string, targetId: string): string => {
   return `edge-${sourceId}-${targetId}`;
 };
 
+// Helper function to get component definition by type
+export const getComponentDefinition = (type: string): ComponentDefinition | undefined => {
+  return componentDefinitions.find(def => def.type === type);
+};
+
 // Convert pipeline to YAML format
 export const pipelineToYAML = (nodes: PipelineNode[], edges: PipelineEdge[], name: string = "Generated Pipeline"): string => {
   const sortedNodes = topologicalSort(nodes, edges);
@@ -285,15 +291,28 @@ export const getComponentColor = (stepType: string): { border: string; bg: strin
     'docker-build': { border: 'border-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/20', iconBg: 'bg-blue-500' },
     'node-npm': { border: 'border-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/20', iconBg: 'bg-blue-500' },
     'normal-build': { border: 'border-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/20', iconBg: 'bg-blue-500' },
+    'python-build': { border: 'border-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/20', iconBg: 'bg-blue-500' },
     
     // Testing
     'unit-tests': { border: 'border-purple-500', bg: 'bg-purple-50 dark:bg-purple-950/20', iconBg: 'bg-purple-500' },
     'integration-tests': { border: 'border-purple-500', bg: 'bg-purple-50 dark:bg-purple-950/20', iconBg: 'bg-purple-500' },
+    'security-scan': { border: 'border-purple-500', bg: 'bg-purple-50 dark:bg-purple-950/20', iconBg: 'bg-purple-500' },
     
     // Deployment
     'deploy-local': { border: 'border-red-500', bg: 'bg-red-50 dark:bg-red-950/20', iconBg: 'bg-red-500' },
     'deploy-ssh': { border: 'border-red-500', bg: 'bg-red-50 dark:bg-red-950/20', iconBg: 'bg-red-500' },
     'deploy-k8s': { border: 'border-red-500', bg: 'bg-red-50 dark:bg-red-950/20', iconBg: 'bg-red-500' },
+    'deploy-cloud': { border: 'border-red-500', bg: 'bg-red-50 dark:bg-red-950/20', iconBg: 'bg-red-500' },
+    
+    // Database
+    'database-migration': { border: 'border-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-950/20', iconBg: 'bg-yellow-500' },
+    'database-backup': { border: 'border-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-950/20', iconBg: 'bg-yellow-500' },
+    
+    // Utilities
+    'shell-command': { border: 'border-gray-500', bg: 'bg-gray-50 dark:bg-gray-950/20', iconBg: 'bg-gray-500' },
+    'file-operations': { border: 'border-gray-500', bg: 'bg-gray-50 dark:bg-gray-950/20', iconBg: 'bg-gray-500' },
+    'environment-setup': { border: 'border-gray-500', bg: 'bg-gray-50 dark:bg-gray-950/20', iconBg: 'bg-gray-500' },
+    'notification': { border: 'border-gray-500', bg: 'bg-gray-50 dark:bg-gray-950/20', iconBg: 'bg-gray-500' },
   };
   
   return colorMap[stepType] || { 
