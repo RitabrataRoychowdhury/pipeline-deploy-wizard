@@ -12,7 +12,7 @@
   - Add proper drag-and-drop functionality with visual feedback
   - _Requirements: 1.3, 2.3, 4.3, 5.2_
 
-- [ ] 3. Build streamlined pipeline canvas
+- [x] 3. Build streamlined pipeline canvas
   - Consolidate existing pipeline builder components into single clean implementation
   - Implement proper ReactFlow integration with custom node types
   - Add canvas controls (zoom, pan, grid) with keyboard shortcuts
@@ -25,7 +25,7 @@
   - _Requirements: 2.1, 2.2, 2.4, 5.1_
 
 - [ ] 5. Add navigation and routing improvements
-  - Fix routing flow from dashboard to pipeline builder
+  - Fix routing flow from dashboard to pipelines
   - Implement proper navigation guards for unsaved changes
   - Add breadcrumb navigation and proper page titles
   - _Requirements: 3.1, 3.2, 3.3, 6.3_

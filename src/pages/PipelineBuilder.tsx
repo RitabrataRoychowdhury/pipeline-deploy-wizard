@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { WhiteboardGraphBuilder } from "@/components/WhiteboardGraphBuilder";
-import { ReactFlowProvider } from '@xyflow/react';
+import { PipelineBuilderNew } from "./PipelineBuilderNew";
 import Navbar from "@/components/Navbar";
 
 export default function PipelineBuilderPage() {
@@ -48,40 +47,32 @@ export default function PipelineBuilderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background">
       <Navbar />
-      <div className="container mx-auto py-8">
-        <div className="mb-6">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur-sm">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             onClick={() => navigate(-1)}
-            className="mb-4"
+            className="gap-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
-          <h1 className="text-3xl font-bold">Visual Pipeline Builder</h1>
-          <p className="text-muted-foreground">
-            Create and configure your CI/CD pipeline with a visual interface
-          </p>
+          <div>
+            <h1 className="text-2xl font-bold">Visual Pipeline Builder</h1>
+            <p className="text-sm text-muted-foreground">
+              Create and configure your CI/CD pipeline with a visual interface
+            </p>
+          </div>
         </div>
+      </div>
 
-        <ReactFlowProvider>
-          <WhiteboardGraphBuilder onSave={(nodes, edges) => {
-            // Convert to YAML and save
-            const yamlContent = `
-pipeline:
-  name: "Generated Pipeline"
-  stages:
-    - name: "main"
-      steps:
-${nodes.map(node => `        - name: "${node.data.label}"
-          type: "${node.data.stepType}"
-          command: "${node.data.command || ''}"`).join('\n')}
-`;
-            handleSave(yamlContent);
-          }} />
-        </ReactFlowProvider>
+      {/* Pipeline Builder */}
+      <div className="flex-1 overflow-hidden">
+        <PipelineBuilderNew onSave={handleSave} />
       </div>
     </div>
   );
