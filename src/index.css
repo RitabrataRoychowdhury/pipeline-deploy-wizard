@@ -149,6 +149,8 @@ All colors MUST be HSL.
     --shadow-card: 0 4px 16px -4px hsl(220 13% 91% / 0.6);
     --shadow-elevated: 0 12px 40px -12px hsl(220 13% 91% / 0.8);
   }
+  
+  .dark {
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
