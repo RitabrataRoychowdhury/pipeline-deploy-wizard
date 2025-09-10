@@ -4,13 +4,32 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { useToast } from "@/hooks/use-toast";
+import { usePageTitle } from "@/hooks/usePageTitle";
+import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { PipelineBuilderNew } from "./PipelineBuilderNew";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import Navbar from "@/components/Navbar";
 
 export default function PipelineBuilderPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // Set page title
+  usePageTitle();
+  
+  // Navigation guard for unsaved changes
+  const { guardedNavigate } = useNavigationGuard({
+    hasUnsavedChanges,
+    message: 'You have unsaved changes in your pipeline. Are you sure you want to leave?',
+    onNavigateAway: () => {
+      toast({
+        title: "Navigation",
+        description: "Navigated away from pipeline builder",
+      });
+    }
+  });
 
   const handleSave = async (yaml: string) => {
     setIsSaving(true);
@@ -40,6 +59,7 @@ export default function PipelineBuilderPage() {
         description: "Your pipeline has been created successfully.",
       });
 
+      setHasUnsavedChanges(false);
       navigate("/pipelines");
     } catch (error) {
       console.error("Error creating pipeline:", error);
@@ -61,12 +81,17 @@ export default function PipelineBuilderPage() {
     <div className="h-screen flex flex-col bg-background">
       <Navbar />
       
+      {/* Breadcrumb Navigation */}
+      <div className="px-6 pt-4">
+        <Breadcrumb />
+      </div>
+      
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur-sm">
         <div className="flex items-center gap-4">
           <LoadingButton
             variant="ghost"
-            onClick={() => navigate(-1)}
+            onClick={() => guardedNavigate(-1)}
             className="gap-2"
             icon={ArrowLeft}
           >
@@ -83,7 +108,10 @@ export default function PipelineBuilderPage() {
 
       {/* Pipeline Builder */}
       <div className="flex-1 overflow-hidden">
-        <PipelineBuilderNew onSave={handleSave} />
+        <PipelineBuilderNew 
+          onSave={handleSave} 
+          onUnsavedChanges={setHasUnsavedChanges}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import Navbar from "@/components/Navbar";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import NotificationHub from "@/components/NotificationHub";
 import { EnhancedCard, EnhancedCardHeader, EnhancedCardTitle, EnhancedCardContent } from "@/components/ui/enhanced-card";
 import { 
@@ -24,6 +26,7 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Settings = () => {
+  usePageTitle();
   const [showApiKey, setShowApiKey] = useState(false);
   const [settings, setSettings] = useState({
     // General Settings
@@ -72,6 +75,11 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-6 pt-4">
+        <Breadcrumb />
+      </div>
       
       <main className="container mx-auto px-6 py-8 space-y-8">
         {/* Page Header */}

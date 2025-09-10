@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOpeningSound } from "@/hooks/useOpeningSound";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +56,9 @@ export default function Welcome() {
   const { playOpeningSound } = useOpeningSound();
   const [selectedConnector, setSelectedConnector] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Set page title
+  usePageTitle();
 
   useEffect(() => {
     // Play entrance animation and sound
@@ -76,13 +80,13 @@ export default function Welcome() {
       // For now, redirect to dummy OAuth - later will be real OAuth
       // window.location.href = "http://0.0.0.0:8000/api/sessions/oauth/google";
       
-      // For now, go directly to pipeline builder
-      navigate('/pipelines/builder');
+      // For now, go directly to dashboard
+      navigate('/dashboard');
     }
   };
 
   const handleSkip = () => {
-    navigate('/pipelines/builder');
+    navigate('/dashboard');
   };
 
   return (
@@ -201,7 +205,7 @@ export default function Welcome() {
                 console.log('OAuth redirect to:', "http://0.0.0.0:8000/api/sessions/oauth/google");
                 // For now, just show a toast
                 alert('OAuth integration coming soon! For now, proceeding without authentication.');
-                navigate('/pipelines/builder');
+                navigate('/dashboard');
               }}
               className="text-sm text-muted-foreground hover:text-foreground"
             >

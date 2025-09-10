@@ -24,6 +24,7 @@ import { pipelineToYAML, validatePipeline, PipelineNode, PipelineEdge } from '@/
 
 interface PipelineBuilderNewProps {
   onSave?: (yaml: string) => void;
+  onUnsavedChanges?: (hasChanges: boolean) => void;
   initialNodes?: Node[];
   initialEdges?: Edge[];
   readOnly?: boolean;
@@ -31,6 +32,7 @@ interface PipelineBuilderNewProps {
 
 export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
   onSave,
+  onUnsavedChanges,
   initialNodes = [],
   initialEdges = [],
   readOnly = false
@@ -48,19 +50,22 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
   const handleNodesChange = useCallback((changes: any) => {
     setNodes(changes);
     setHasUnsavedChanges(true);
-  }, []);
+    onUnsavedChanges?.(true);
+  }, [onUnsavedChanges]);
 
   // Handle edges change
   const handleEdgesChange = useCallback((changes: any) => {
     setEdges(changes);
     setHasUnsavedChanges(true);
-  }, []);
+    onUnsavedChanges?.(true);
+  }, [onUnsavedChanges]);
 
   // Handle connection
   const handleConnect = useCallback((connection: any) => {
     setEdges((eds) => [...eds, connection]);
     setHasUnsavedChanges(true);
-  }, []);
+    onUnsavedChanges?.(true);
+  }, [onUnsavedChanges]);
 
   // Save pipeline
   const handleSave = useCallback(async (savedNodes?: Node[], savedEdges?: Edge[]) => {
@@ -90,6 +95,7 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
       setNodes(nodesToSave);
       setEdges(edgesToSave);
       setHasUnsavedChanges(false);
+      onUnsavedChanges?.(false);
       
       toast.success('Pipeline saved successfully!');
     } catch (error) {
@@ -141,7 +147,8 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
     setNodes([]);
     setEdges([]);
     setHasUnsavedChanges(false);
-  }, []);
+    onUnsavedChanges?.(false);
+  }, [onUnsavedChanges]);
 
   // Handle unsaved changes warning
   React.useEffect(() => {

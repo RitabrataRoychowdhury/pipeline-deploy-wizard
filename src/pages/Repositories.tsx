@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import Navbar from "@/components/Navbar";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { GitBranch, Github, Plus, Search, Settings, Trash2, RefreshCw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,7 @@ interface Repository {
 }
 
 const Repositories = () => {
+  usePageTitle();
   const [repositories, setRepositories] = useState<Repository[]>([
     {
       id: "1",
@@ -178,6 +181,11 @@ const Repositories = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-6 pt-4">
+        <Breadcrumb />
+      </div>
       
       <main className="container mx-auto px-6 py-8 space-y-8">
         {/* Page Header */}

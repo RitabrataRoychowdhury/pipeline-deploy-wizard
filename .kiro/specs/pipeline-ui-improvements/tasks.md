@@ -24,7 +24,7 @@
   - Implement save/export functionality with proper error handling
   - _Requirements: 2.1, 2.2, 2.4, 5.1_
 
-- [ ] 5. Add navigation and routing improvements
+- [x] 5. Add navigation and routing improvements
   - Fix routing flow from dashboard to pipelines
   - Implement proper navigation guards for unsaved changes
   - Add breadcrumb navigation and proper page titles

@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import Navbar from "@/components/Navbar";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import PipelineCard from "@/components/PipelineCard";
 import CreatePipelineDialog from "@/components/CreatePipelineDialog";
 import StatsCard from "@/components/StatsCard";
@@ -32,6 +34,7 @@ interface Pipeline {
 
 const Pipelines = () => {
   const navigate = useNavigate();
+  usePageTitle();
   const [pipelines, setPipelines] = useState<Pipeline[]>([
     {
       name: "RustCI Deploy",
@@ -173,6 +176,11 @@ const Pipelines = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-6 pt-4">
+        <Breadcrumb />
+      </div>
       
       <main className="container mx-auto px-6 py-8 space-y-8">
         {/* Page Header */}
