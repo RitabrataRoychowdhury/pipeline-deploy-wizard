@@ -1,5 +1,6 @@
 import { type Node, type Edge } from '@xyflow/react';
 import { componentDefinitions } from './component-definitions';
+import { ErrorHandler, ERROR_CODES, PipelineError, handleAsyncError } from './error-handling';
 
 export interface PipelineNode extends Node {
   data: {
@@ -43,38 +44,54 @@ export interface ComponentCategory {
   components: ComponentDefinition[];
 }
 
-// Pipeline validation utilities
+// Pipeline validation utilities (basic version - use validation.ts for comprehensive validation)
 export const validatePipeline = (nodes: PipelineNode[], edges: PipelineEdge[]): ValidationResult => {
-  const errors: string[] = [];
-  const warnings: string[] = [];
+  const errorHandler = ErrorHandler.getInstance();
+  
+  try {
+    const errors: string[] = [];
+    const warnings: string[] = [];
 
-  // Check for circular dependencies
-  const hasCycle = detectCycle(nodes, edges);
-  if (hasCycle) {
-    errors.push("Pipeline contains circular dependencies");
-  }
-
-  // Check for orphaned nodes
-  const orphanedNodes = findOrphanedNodes(nodes, edges);
-  if (orphanedNodes.length > 0) {
-    warnings.push(`${orphanedNodes.length} nodes are not connected to the pipeline flow`);
-  }
-
-  // Check for missing required configurations
-  nodes.forEach(node => {
-    if (!node.data.label?.trim()) {
-      errors.push(`Node ${node.id} is missing a label`);
+    // Check for circular dependencies
+    const hasCycle = detectCycle(nodes, edges);
+    if (hasCycle) {
+      errors.push("Pipeline contains circular dependencies");
     }
-    if (!node.data.stepType) {
-      errors.push(`Node ${node.id} is missing a step type`);
-    }
-  });
 
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings
-  };
+    // Check for orphaned nodes
+    const orphanedNodes = findOrphanedNodes(nodes, edges);
+    if (orphanedNodes.length > 0) {
+      warnings.push(`${orphanedNodes.length} nodes are not connected to the pipeline flow`);
+    }
+
+    // Check for missing required configurations
+    nodes.forEach(node => {
+      if (!node.data.label?.trim()) {
+        errors.push(`Node ${node.id} is missing a label`);
+      }
+      if (!node.data.stepType) {
+        errors.push(`Node ${node.id} is missing a step type`);
+      }
+    });
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings
+    };
+  } catch (error) {
+    errorHandler.handleError(error as Error, {
+      component: 'pipeline-utils',
+      action: 'validatePipeline',
+      timestamp: new Date(),
+    });
+    
+    return {
+      isValid: false,
+      errors: ['Validation failed due to an internal error'],
+      warnings: []
+    };
+  }
 };
 
 // Detect cycles in the pipeline graph
@@ -153,15 +170,38 @@ export const getComponentDefinition = (type: string): ComponentDefinition | unde
 
 // Convert pipeline to YAML format
 export const pipelineToYAML = (nodes: PipelineNode[], edges: PipelineEdge[], name: string = "Generated Pipeline"): string => {
+  const errorHandler = ErrorHandler.getInstance();
+  
   try {
     if (!nodes || nodes.length === 0) {
-      throw new Error("Cannot export empty pipeline");
+      throw new PipelineError({
+        code: ERROR_CODES.EXPORT_FAILED,
+        message: "Cannot export empty pipeline",
+        severity: 'medium',
+        recoverable: true,
+        context: {
+          component: 'pipeline-utils',
+          action: 'pipelineToYAML',
+          timestamp: new Date(),
+        },
+      });
     }
 
     // Validate pipeline before export
     const validation = validatePipeline(nodes, edges);
     if (!validation.isValid) {
-      throw new Error(`Pipeline validation failed: ${validation.errors.join(', ')}`);
+      throw new PipelineError({
+        code: ERROR_CODES.EXPORT_FAILED,
+        message: `Pipeline validation failed: ${validation.errors.join(', ')}`,
+        severity: 'medium',
+        recoverable: true,
+        context: {
+          component: 'pipeline-utils',
+          action: 'pipelineToYAML',
+          timestamp: new Date(),
+          metadata: { validationErrors: validation.errors },
+        },
+      });
     }
 
     const sortedNodes = topologicalSort(nodes, edges);
@@ -190,8 +230,25 @@ ${sortedNodes.map(node => {
 }).join('\n')}
 `.trim();
   } catch (error) {
-    console.error('Error generating YAML:', error);
-    throw new Error(`Failed to generate YAML: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    if (error instanceof PipelineError) {
+      errorHandler.handleError(error);
+      throw error;
+    }
+    
+    const pipelineError = new PipelineError({
+      code: ERROR_CODES.EXPORT_FAILED,
+      message: `Failed to generate YAML: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      severity: 'high',
+      recoverable: true,
+      context: {
+        component: 'pipeline-utils',
+        action: 'pipelineToYAML',
+        timestamp: new Date(),
+      },
+    });
+    
+    errorHandler.handleError(pipelineError);
+    throw pipelineError;
   }
 };
 
@@ -355,9 +412,19 @@ export const exportPipelineData = async (
   name: string,
   format: 'yaml' | 'json' = 'yaml'
 ): Promise<{ content: string; filename: string; mimeType: string }> => {
-  try {
+  return handleAsyncError(async () => {
     if (!nodes || nodes.length === 0) {
-      throw new Error("Cannot export empty pipeline");
+      throw new PipelineError({
+        code: ERROR_CODES.EXPORT_FAILED,
+        message: "Cannot export empty pipeline",
+        severity: 'medium',
+        recoverable: true,
+        context: {
+          component: 'pipeline-utils',
+          action: 'exportPipelineData',
+          timestamp: new Date(),
+        },
+      });
     }
 
     const sanitizedName = name.replace(/[^\w\s-]/g, '').trim() || "pipeline";
@@ -399,19 +466,32 @@ export const exportPipelineData = async (
         mimeType: 'application/json'
       };
     }
-  } catch (error) {
-    console.error('Error exporting pipeline:', error);
-    throw new Error(`Failed to export pipeline: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
+  }, {
+    component: 'pipeline-utils',
+    action: 'exportPipelineData',
+    metadata: { format, pipelineName: name },
+  }) || { content: '', filename: 'error.txt', mimeType: 'text/plain' };
 };
 
 // Import pipeline data from JSON format
 export const importPipelineData = (jsonData: string): { nodes: Node[]; edges: Edge[]; name: string } => {
+  const errorHandler = ErrorHandler.getInstance();
+  
   try {
     const data = JSON.parse(jsonData);
     
     if (!data.nodes || !Array.isArray(data.nodes)) {
-      throw new Error("Invalid pipeline data: missing or invalid nodes");
+      throw new PipelineError({
+        code: ERROR_CODES.IMPORT_FAILED,
+        message: "Invalid pipeline data: missing or invalid nodes",
+        severity: 'medium',
+        recoverable: false,
+        context: {
+          component: 'pipeline-utils',
+          action: 'importPipelineData',
+          timestamp: new Date(),
+        },
+      });
     }
 
     const nodes: Node[] = data.nodes.map((nodeData: any) => ({
@@ -446,8 +526,25 @@ export const importPipelineData = (jsonData: string): { nodes: Node[]; edges: Ed
       name: data.name || "Imported Pipeline"
     };
   } catch (error) {
-    console.error('Error importing pipeline:', error);
-    throw new Error(`Failed to import pipeline: ${error instanceof Error ? error.message : 'Invalid JSON data'}`);
+    if (error instanceof PipelineError) {
+      errorHandler.handleError(error);
+      throw error;
+    }
+    
+    const pipelineError = new PipelineError({
+      code: ERROR_CODES.IMPORT_FAILED,
+      message: `Failed to import pipeline: ${error instanceof Error ? error.message : 'Invalid JSON data'}`,
+      severity: 'medium',
+      recoverable: false,
+      context: {
+        component: 'pipeline-utils',
+        action: 'importPipelineData',
+        timestamp: new Date(),
+      },
+    });
+    
+    errorHandler.handleError(pipelineError);
+    throw pipelineError;
   }
 };
 
