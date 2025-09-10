@@ -153,20 +153,46 @@ export const getComponentDefinition = (type: string): ComponentDefinition | unde
 
 // Convert pipeline to YAML format
 export const pipelineToYAML = (nodes: PipelineNode[], edges: PipelineEdge[], name: string = "Generated Pipeline"): string => {
-  const sortedNodes = topologicalSort(nodes, edges);
-  
-  return `
+  try {
+    if (!nodes || nodes.length === 0) {
+      throw new Error("Cannot export empty pipeline");
+    }
+
+    // Validate pipeline before export
+    const validation = validatePipeline(nodes, edges);
+    if (!validation.isValid) {
+      throw new Error(`Pipeline validation failed: ${validation.errors.join(', ')}`);
+    }
+
+    const sortedNodes = topologicalSort(nodes, edges);
+    
+    // Sanitize name for YAML
+    const sanitizedName = name.replace(/[^\w\s-]/g, '').trim() || "Generated Pipeline";
+    
+    return `
 pipeline:
-  name: "${name}"
+  name: "${sanitizedName}"
   description: "Generated from visual pipeline builder"
   stages:
     - name: "main"
       steps:
-${sortedNodes.map(node => `        - name: "${node.data.label}"
-          type: "${node.data.stepType}"${node.data.command ? `
-          command: "${node.data.command}"` : ''}${Object.keys(node.data.configuration || {}).length > 0 ? `
-          config: ${JSON.stringify(node.data.configuration, null, 12).split('\n').map(line => `            ${line}`).join('\n').trim()}` : ''}`).join('\n')}
+${sortedNodes.map(node => {
+  const sanitizedLabel = node.data.label?.replace(/"/g, '\\"') || node.id;
+  const configStr = node.data.configuration && Object.keys(node.data.configuration).length > 0 
+    ? `\n          config: ${JSON.stringify(node.data.configuration, null, 12).split('\n').map(line => `            ${line}`).join('\n').trim()}`
+    : '';
+  const commandStr = node.data.command 
+    ? `\n          command: "${node.data.command.replace(/"/g, '\\"')}"` 
+    : '';
+    
+  return `        - name: "${sanitizedLabel}"
+          type: "${node.data.stepType}"${commandStr}${configStr}`;
+}).join('\n')}
 `.trim();
+  } catch (error) {
+    console.error('Error generating YAML:', error);
+    throw new Error(`Failed to generate YAML: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };
 
 // Topological sort for proper execution order
@@ -320,6 +346,109 @@ export const getComponentColor = (stepType: string): { border: string; bg: strin
     bg: 'bg-gray-50 dark:bg-gray-950/20', 
     iconBg: 'bg-gray-500' 
   };
+};
+
+// Export pipeline data in various formats
+export const exportPipelineData = async (
+  nodes: PipelineNode[], 
+  edges: PipelineEdge[], 
+  name: string,
+  format: 'yaml' | 'json' = 'yaml'
+): Promise<{ content: string; filename: string; mimeType: string }> => {
+  try {
+    if (!nodes || nodes.length === 0) {
+      throw new Error("Cannot export empty pipeline");
+    }
+
+    const sanitizedName = name.replace(/[^\w\s-]/g, '').trim() || "pipeline";
+    
+    if (format === 'yaml') {
+      const yaml = pipelineToYAML(nodes, edges, name);
+      return {
+        content: yaml,
+        filename: `${sanitizedName}.yaml`,
+        mimeType: 'text/yaml'
+      };
+    } else {
+      const pipelineData = {
+        name: sanitizedName,
+        description: "Generated from visual pipeline builder",
+        nodes: nodes.map(node => ({
+          id: node.id,
+          type: node.data.stepType,
+          label: node.data.label,
+          command: node.data.command,
+          configuration: node.data.configuration,
+          position: node.position
+        })),
+        edges: edges.map(edge => ({
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          type: edge.type
+        })),
+        metadata: {
+          exportedAt: new Date().toISOString(),
+          version: "1.0"
+        }
+      };
+      
+      return {
+        content: JSON.stringify(pipelineData, null, 2),
+        filename: `${sanitizedName}.json`,
+        mimeType: 'application/json'
+      };
+    }
+  } catch (error) {
+    console.error('Error exporting pipeline:', error);
+    throw new Error(`Failed to export pipeline: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+
+// Import pipeline data from JSON format
+export const importPipelineData = (jsonData: string): { nodes: Node[]; edges: Edge[]; name: string } => {
+  try {
+    const data = JSON.parse(jsonData);
+    
+    if (!data.nodes || !Array.isArray(data.nodes)) {
+      throw new Error("Invalid pipeline data: missing or invalid nodes");
+    }
+
+    const nodes: Node[] = data.nodes.map((nodeData: any) => ({
+      id: nodeData.id || generateNodeId(nodeData.type),
+      type: 'pipelineNode',
+      position: nodeData.position || { x: 0, y: 0 },
+      data: {
+        label: nodeData.label || nodeData.type,
+        stepType: nodeData.type,
+        command: nodeData.command || '',
+        configuration: nodeData.configuration || {},
+        validation: {
+          isValid: true,
+          errors: [],
+          warnings: []
+        }
+      }
+    }));
+
+    const edges: Edge[] = (data.edges || []).map((edgeData: any) => ({
+      id: edgeData.id || generateEdgeId(edgeData.source, edgeData.target),
+      source: edgeData.source,
+      target: edgeData.target,
+      type: edgeData.type || 'smoothstep',
+      animated: true,
+      style: { stroke: '#6366f1', strokeWidth: 2 }
+    }));
+
+    return {
+      nodes,
+      edges,
+      name: data.name || "Imported Pipeline"
+    };
+  } catch (error) {
+    console.error('Error importing pipeline:', error);
+    throw new Error(`Failed to import pipeline: ${error instanceof Error ? error.message : 'Invalid JSON data'}`);
+  }
 };
 
 // Keyboard shortcut utilities

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { useToast } from "@/hooks/use-toast";
 import { PipelineBuilderNew } from "./PipelineBuilderNew";
 import Navbar from "@/components/Navbar";
@@ -9,8 +10,11 @@ import Navbar from "@/components/Navbar";
 export default function PipelineBuilderPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async (yaml: string) => {
+    setIsSaving(true);
+    
     try {
       // Create FormData for file upload
       const formData = new FormData();
@@ -24,7 +28,8 @@ export default function PipelineBuilderPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create pipeline");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: Failed to create pipeline`);
       }
 
       const result = await response.json();
@@ -38,11 +43,17 @@ export default function PipelineBuilderPage() {
       navigate("/pipelines");
     } catch (error) {
       console.error("Error creating pipeline:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to create pipeline. Please try again.";
+      
       toast({
         title: "Error",
-        description: "Failed to create pipeline. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      throw error; // Re-throw for the button to handle
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -53,14 +64,14 @@ export default function PipelineBuilderPage() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur-sm">
         <div className="flex items-center gap-4">
-          <Button
+          <LoadingButton
             variant="ghost"
             onClick={() => navigate(-1)}
             className="gap-2"
+            icon={ArrowLeft}
           >
-            <ArrowLeft className="h-4 w-4" />
             Back
-          </Button>
+          </LoadingButton>
           <div>
             <h1 className="text-2xl font-bold">Visual Pipeline Builder</h1>
             <p className="text-sm text-muted-foreground">

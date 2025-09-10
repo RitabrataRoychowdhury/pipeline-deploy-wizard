@@ -31,6 +31,8 @@ import {
 } from '@/lib/pipeline-utils';
 import { ComponentDefinition } from '@/lib/pipeline-utils';
 import { Button } from '@/components/ui/button';
+import { ActionButton } from '@/components/ui/action-button';
+import { LoadingButton } from '@/components/ui/loading-button';
 import { 
   Grid3X3, 
   Move, 
@@ -357,23 +359,21 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
   }, [readOnly, setNodes, setEdges, saveToHistory]);
 
   // Auto-layout nodes
-  const autoLayout = useCallback(() => {
+  const autoLayout = useCallback(async () => {
     if (readOnly) return;
     
     saveToHistory();
     const layoutedNodes = autoLayoutNodes(nodes as PipelineNodeType[], edges as PipelineEdge[]);
     setNodes(layoutedNodes);
-    toast.success('Applied auto-layout to pipeline');
   }, [readOnly, nodes, edges, setNodes, saveToHistory]);
 
   // Clear all nodes and edges
-  const clearAll = useCallback(() => {
+  const clearAll = useCallback(async () => {
     if (readOnly) return;
     
     saveToHistory();
     setNodes([]);
     setEdges([]);
-    toast.success('Cleared all nodes and connections');
   }, [readOnly, setNodes, setEdges, saveToHistory]);
 
   // Reset view to fit all nodes
@@ -382,20 +382,20 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
   }, [fitView]);
 
   // Save pipeline
-  const savePipeline = useCallback(() => {
+  const savePipeline = useCallback(async () => {
     const validation = validatePipeline(nodes as PipelineNodeType[], edges as PipelineEdge[]);
     
     if (!validation.isValid) {
-      toast.error(`Cannot save: ${validation.errors.join(', ')}`);
-      return;
+      throw new Error(`Cannot save: ${validation.errors.join(', ')}`);
     }
     
     if (validation.warnings.length > 0) {
       toast.warning(`Warnings: ${validation.warnings.join(', ')}`);
     }
     
-    onSave?.(nodes, edges);
-    toast.success('Pipeline saved successfully');
+    if (onSave) {
+      await onSave(nodes, edges);
+    }
   }, [nodes, edges, onSave]);
 
   // Handle node events
@@ -513,7 +513,7 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
         {/* Floating Toolbar */}
         <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-background/95 backdrop-blur-sm border border-border/50 rounded-xl p-2 shadow-lg">
           {/* View Controls */}
-          <Button
+          <LoadingButton
             variant="ghost"
             size="sm"
             onClick={() => setIsGridVisible(!isGridVisible)}
@@ -521,9 +521,9 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
             title="Toggle Grid (G)"
           >
             <Grid3X3 className="h-4 w-4" />
-          </Button>
+          </LoadingButton>
           
-          <Button
+          <LoadingButton
             variant="ghost"
             size="sm"
             onClick={() => setIsSnapToGrid(!isSnapToGrid)}
@@ -531,12 +531,12 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
             title="Toggle Snap to Grid"
           >
             <Move className="h-4 w-4" />
-          </Button>
+          </LoadingButton>
 
           <div className="w-px h-4 bg-border" />
 
           {/* Zoom Controls */}
-          <Button
+          <LoadingButton
             variant="ghost"
             size="sm"
             onClick={() => zoomIn({ duration: 300 })}
@@ -544,9 +544,9 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
             title="Zoom In"
           >
             <ZoomIn className="h-4 w-4" />
-          </Button>
+          </LoadingButton>
           
-          <Button
+          <LoadingButton
             variant="ghost"
             size="sm"
             onClick={() => zoomOut({ duration: 300 })}
@@ -554,9 +554,9 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
             title="Zoom Out"
           >
             <ZoomOut className="h-4 w-4" />
-          </Button>
+          </LoadingButton>
           
-          <Button
+          <LoadingButton
             variant="ghost"
             size="sm"
             onClick={resetView}
@@ -564,14 +564,14 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
             title="Reset View (R)"
           >
             <RotateCcw className="h-4 w-4" />
-          </Button>
+          </LoadingButton>
 
           {!readOnly && (
             <>
               <div className="w-px h-4 bg-border" />
 
               {/* Edit Controls */}
-              <Button
+              <LoadingButton
                 variant="ghost"
                 size="sm"
                 onClick={undo}
@@ -580,9 +580,9 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
                 title="Undo (Ctrl+Z)"
               >
                 <Undo2 className="h-4 w-4" />
-              </Button>
+              </LoadingButton>
               
-              <Button
+              <LoadingButton
                 variant="ghost"
                 size="sm"
                 onClick={redo}
@@ -591,11 +591,11 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
                 title="Redo (Ctrl+Y)"
               >
                 <Redo2 className="h-4 w-4" />
-              </Button>
+              </LoadingButton>
 
               <div className="w-px h-4 bg-border" />
 
-              <Button
+              <LoadingButton
                 variant="ghost"
                 size="sm"
                 onClick={copySelected}
@@ -604,9 +604,9 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
                 title="Copy (Ctrl+C)"
               >
                 <Copy className="h-4 w-4" />
-              </Button>
+              </LoadingButton>
               
-              <Button
+              <LoadingButton
                 variant="ghost"
                 size="sm"
                 onClick={deleteSelected}
@@ -615,20 +615,23 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
                 title="Delete (Del)"
               >
                 <Trash2 className="h-4 w-4" />
-              </Button>
+              </LoadingButton>
 
               <div className="w-px h-4 bg-border" />
 
-              <Button
+              <ActionButton
+                action="custom"
+                onAction={autoLayout}
                 variant="ghost"
                 size="sm"
-                onClick={autoLayout}
                 disabled={nodes.length === 0}
                 className="h-8 w-8 p-0"
                 title="Auto Layout"
+                icon={Settings}
+                successMessage="Auto-layout applied!"
+                errorMessage="Failed to apply auto-layout"
               >
-                <Settings className="h-4 w-4" />
-              </Button>
+              </ActionButton>
             </>
           )}
         </div>
@@ -724,40 +727,48 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
         {!readOnly && (
           <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20">
             <div className="flex items-center gap-2 bg-background/95 backdrop-blur-sm border border-border/50 rounded-xl p-2 shadow-lg">
-              <Button
+              <ActionButton
+                action="delete"
+                onAction={clearAll}
                 variant="ghost"
                 size="sm"
-                onClick={clearAll}
                 disabled={nodes.length === 0}
                 className="h-8 px-3 text-sm text-destructive hover:text-destructive"
+                confirmAction={true}
+                confirmMessage="Are you sure you want to clear all nodes and connections? This action cannot be undone."
+                successMessage="Pipeline cleared!"
+                errorMessage="Failed to clear pipeline"
               >
-                <Trash2 className="h-4 w-4 mr-1" />
                 Clear All
-              </Button>
+              </ActionButton>
               
               <div className="w-px h-4 bg-border" />
               
-              <Button
+              <ActionButton
+                action="custom"
+                onAction={autoLayout}
                 variant="ghost"
                 size="sm"
-                onClick={autoLayout}
                 disabled={nodes.length === 0}
                 className="h-8 px-3 text-sm"
+                icon={Settings}
+                successMessage="Auto-layout applied!"
+                errorMessage="Failed to apply auto-layout"
               >
-                <Settings className="h-4 w-4 mr-1" />
                 Auto Layout
-              </Button>
+              </ActionButton>
               
-              <Button
-                variant="default"
+              <ActionButton
+                action="save"
+                onAction={savePipeline}
                 size="sm"
-                onClick={savePipeline}
                 disabled={nodes.length === 0}
                 className="h-8 px-3 text-sm"
+                successMessage="Pipeline saved!"
+                errorMessage="Failed to save pipeline"
               >
-                <Save className="h-4 w-4 mr-1" />
                 Save Pipeline
-              </Button>
+              </ActionButton>
             </div>
           </div>
         )}

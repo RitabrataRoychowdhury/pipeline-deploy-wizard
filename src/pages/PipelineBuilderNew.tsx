@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { PipelineCanvas } from '@/components/PipelineCanvas';
 import { ComponentPalette } from '@/components/ComponentPalette';
 import { Button } from '@/components/ui/button';
+import { ActionButton } from '@/components/ui/action-button';
+import { LoadingButton } from '@/components/ui/loading-button';
 import { 
   Package, 
   X, 
@@ -12,7 +14,9 @@ import {
   Settings,
   Play,
   Eye,
-  EyeOff
+  EyeOff,
+  Download,
+  Copy
 } from 'lucide-react';
 import { Node, Edge } from '@xyflow/react';
 import { toast } from 'sonner';
@@ -37,44 +41,65 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [pipelineName, setPipelineName] = useState('My Pipeline');
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Handle nodes change
   const handleNodesChange = useCallback((changes: any) => {
     setNodes(changes);
+    setHasUnsavedChanges(true);
   }, []);
 
   // Handle edges change
   const handleEdgesChange = useCallback((changes: any) => {
     setEdges(changes);
+    setHasUnsavedChanges(true);
   }, []);
 
   // Handle connection
   const handleConnect = useCallback((connection: any) => {
     setEdges((eds) => [...eds, connection]);
+    setHasUnsavedChanges(true);
   }, []);
 
   // Save pipeline
-  const handleSave = useCallback((savedNodes: Node[], savedEdges: Edge[]) => {
-    const validation = validatePipeline(savedNodes as PipelineNode[], savedEdges as PipelineEdge[]);
+  const handleSave = useCallback(async (savedNodes?: Node[], savedEdges?: Edge[]) => {
+    const nodesToSave = savedNodes || nodes;
+    const edgesToSave = savedEdges || edges;
     
-    if (!validation.isValid) {
-      toast.error(`Cannot save pipeline: ${validation.errors.join(', ')}`);
-      return;
-    }
+    setIsSaving(true);
+    
+    try {
+      const validation = validatePipeline(nodesToSave as PipelineNode[], edgesToSave as PipelineEdge[]);
+      
+      if (!validation.isValid) {
+        throw new Error(`Cannot save pipeline: ${validation.errors.join(', ')}`);
+      }
 
-    if (validation.warnings.length > 0) {
-      toast.warning(`Pipeline warnings: ${validation.warnings.join(', ')}`);
-    }
+      if (validation.warnings.length > 0) {
+        toast.warning(`Pipeline warnings: ${validation.warnings.join(', ')}`);
+      }
 
-    const yaml = pipelineToYAML(savedNodes as PipelineNode[], savedEdges as PipelineEdge[], pipelineName);
-    onSave?.(yaml);
-    
-    // Update local state
-    setNodes(savedNodes);
-    setEdges(savedEdges);
-    
-    toast.success('Pipeline saved successfully!');
-  }, [onSave, pipelineName]);
+      const yaml = pipelineToYAML(nodesToSave as PipelineNode[], edgesToSave as PipelineEdge[], pipelineName);
+      
+      if (onSave) {
+        await onSave(yaml);
+      }
+      
+      // Update local state
+      setNodes(nodesToSave);
+      setEdges(edgesToSave);
+      setHasUnsavedChanges(false);
+      
+      toast.success('Pipeline saved successfully!');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save pipeline';
+      toast.error(errorMessage);
+      throw error; // Re-throw for ActionButton to handle
+    } finally {
+      setIsSaving(false);
+    }
+  }, [onSave, pipelineName, nodes, edges]);
 
   // Generate YAML preview
   const generateYAMLPreview = useCallback(() => {
@@ -84,6 +109,52 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
       return `# Error generating YAML preview: ${error}`;
     }
   }, [nodes, edges, pipelineName]);
+
+  // Export pipeline as YAML file
+  const handleExportYAML = useCallback(async () => {
+    const validation = validatePipeline(nodes as PipelineNode[], edges as PipelineEdge[]);
+    
+    if (!validation.isValid) {
+      throw new Error(`Cannot export pipeline: ${validation.errors.join(', ')}`);
+    }
+
+    const yaml = generateYAMLPreview();
+    return {
+      yaml,
+      name: pipelineName
+    };
+  }, [nodes, edges, pipelineName, generateYAMLPreview]);
+
+  // Copy YAML to clipboard
+  const handleCopyYAML = useCallback(async () => {
+    const validation = validatePipeline(nodes as PipelineNode[], edges as PipelineEdge[]);
+    
+    if (!validation.isValid) {
+      throw new Error(`Cannot copy pipeline: ${validation.errors.join(', ')}`);
+    }
+
+    return generateYAMLPreview();
+  }, [nodes, edges, generateYAMLPreview]);
+
+  // Clear pipeline
+  const handleClearPipeline = useCallback(async () => {
+    setNodes([]);
+    setEdges([]);
+    setHasUnsavedChanges(false);
+  }, []);
+
+  // Handle unsaved changes warning
+  React.useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   return (
     <div className={`h-full flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''}`}>
@@ -104,37 +175,77 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
         <div className="flex items-center gap-2">
           {!readOnly && (
             <>
-              <Button
+              <LoadingButton
                 variant="outline"
                 size="sm"
                 onClick={() => setShowPreview(!showPreview)}
                 className="gap-2"
+                icon={showPreview ? EyeOff : Eye}
               >
-                {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 {showPreview ? 'Hide' : 'Show'} YAML
-              </Button>
+              </LoadingButton>
               
-              <Button
+              <LoadingButton
                 variant="outline"
                 size="sm"
                 onClick={() => setIsPaletteOpen(!isPaletteOpen)}
                 className="gap-2"
+                icon={Package}
               >
-                <Package className="h-4 w-4" />
                 {isPaletteOpen ? 'Hide' : 'Show'} Components
-              </Button>
+              </LoadingButton>
+
+              <ActionButton
+                action="save"
+                onAction={() => handleSave()}
+                loading={isSaving}
+                disabled={nodes.length === 0}
+                size="sm"
+                className="gap-2"
+                successMessage="Pipeline saved!"
+                errorMessage="Failed to save pipeline"
+              >
+                Save Pipeline
+              </ActionButton>
+
+              <ActionButton
+                action="export"
+                onAction={handleExportYAML}
+                disabled={nodes.length === 0}
+                size="sm"
+                className="gap-2"
+                successMessage="Pipeline exported!"
+                errorMessage="Failed to export pipeline"
+              >
+                Export YAML
+              </ActionButton>
+
+              <ActionButton
+                action="delete"
+                onAction={handleClearPipeline}
+                disabled={nodes.length === 0}
+                size="sm"
+                variant="outline"
+                className="gap-2 text-destructive hover:text-destructive"
+                confirmAction={true}
+                confirmMessage="Are you sure you want to clear the entire pipeline? This action cannot be undone."
+                successMessage="Pipeline cleared"
+                errorMessage="Failed to clear pipeline"
+              >
+                Clear All
+              </ActionButton>
             </>
           )}
           
-          <Button
+          <LoadingButton
             variant="outline"
             size="sm"
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="gap-2"
+            icon={isFullscreen ? Minimize2 : Maximize2}
           >
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             {isFullscreen ? 'Exit' : 'Fullscreen'}
-          </Button>
+          </LoadingButton>
         </div>
       </div>
 
@@ -190,18 +301,32 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
               </pre>
             </div>
             
-            <div className="p-4 border-t">
-              <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(generateYAMLPreview());
-                  toast.success('YAML copied to clipboard');
-                }}
+            <div className="p-4 border-t space-y-2">
+              <ActionButton
+                action="copy"
+                onAction={handleCopyYAML}
                 className="w-full gap-2"
                 size="sm"
+                disabled={nodes.length === 0}
+                successMessage="YAML copied to clipboard!"
+                errorMessage="Failed to copy YAML"
               >
-                <FileText className="h-4 w-4" />
                 Copy YAML
-              </Button>
+              </ActionButton>
+              
+              <ActionButton
+                action="export"
+                onAction={handleExportYAML}
+                variant="outline"
+                className="w-full gap-2"
+                size="sm"
+                disabled={nodes.length === 0}
+                icon={Download}
+                successMessage="YAML file downloaded!"
+                errorMessage="Failed to download YAML"
+              >
+                Download YAML
+              </ActionButton>
             </div>
           </div>
         )}
@@ -212,9 +337,20 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
         <div className="flex items-center gap-4">
           <span>{nodes.length} nodes</span>
           <span>{edges.length} connections</span>
-          {nodes.length > 0 && (
+          {hasUnsavedChanges && (
+            <span className="text-yellow-600 flex items-center gap-1">
+              <div className="w-2 h-2 bg-yellow-600 rounded-full animate-pulse" />
+              Unsaved changes
+            </span>
+          )}
+          {nodes.length > 0 && !hasUnsavedChanges && (
             <span className="text-green-600">
-              ✓ Pipeline ready
+              ✓ Pipeline saved
+            </span>
+          )}
+          {nodes.length === 0 && (
+            <span className="text-muted-foreground">
+              Add components to start building
             </span>
           )}
         </div>

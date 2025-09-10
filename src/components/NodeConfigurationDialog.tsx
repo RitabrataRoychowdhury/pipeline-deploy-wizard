@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { LoadingButton } from '@/components/ui/loading-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -42,6 +43,7 @@ export const NodeConfigurationDialog: React.FC<NodeConfigurationDialogProps> = (
   });
   const [errors, setErrors] = useState<string[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const componentDef = getComponentDefinition(nodeData?.stepType);
 
@@ -107,8 +109,14 @@ export const NodeConfigurationDialog: React.FC<NodeConfigurationDialogProps> = (
     validateConfiguration();
   }, [formData]);
 
-  const handleSave = () => {
-    if (validateConfiguration()) {
+  const handleSave = async () => {
+    if (!validateConfiguration()) {
+      return;
+    }
+
+    setIsSaving(true);
+    
+    try {
       const updatedData = {
         ...nodeData,
         ...formData,
@@ -118,8 +126,14 @@ export const NodeConfigurationDialog: React.FC<NodeConfigurationDialogProps> = (
           warnings
         }
       };
-      onSave(updatedData);
+      
+      await onSave(updatedData);
       onClose();
+    } catch (error) {
+      console.error('Failed to save node configuration:', error);
+      throw error;
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -337,15 +351,19 @@ export const NodeConfigurationDialog: React.FC<NodeConfigurationDialogProps> = (
         </ScrollArea>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isSaving}>
             Cancel
           </Button>
-          <Button 
+          <LoadingButton 
             onClick={handleSave}
             disabled={errors.length > 0}
+            loading={isSaving}
+            loadingText="Saving..."
+            successText="Saved!"
+            errorText="Save Failed"
           >
             Save Configuration
-          </Button>
+          </LoadingButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>
