@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -108,11 +108,20 @@ const stats = [
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { login, isAuthenticated } = useAuth();
   const [selectedConnector, setSelectedConnector] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   usePageTitle("Enterprise CI/CD Platform - RustCI");
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
 
   const handleConnectorSelect = (connectorId: string) => {
     setSelectedConnector(connectorId);
@@ -137,7 +146,10 @@ export default function Landing() {
       login(connectorId, userData);
       
       setIsLoading(false);
-      navigate('/dashboard');
+      
+      // Navigate to the intended destination or dashboard
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
     }, 2000);
   };
 
