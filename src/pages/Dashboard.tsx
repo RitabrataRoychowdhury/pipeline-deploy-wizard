@@ -7,7 +7,7 @@ import PipelineCard from "@/components/PipelineCard";
 import StatsCard from "@/components/StatsCard";
 import RecentBuilds from "@/components/RecentBuilds";
 import { EarthDashboard } from "@/components/3d/EarthDashboard";
-import { Activity, GitBranch, CheckCircle, Clock, Plus } from "lucide-react";
+import { Activity, GitBranch, CheckCircle, Clock, Plus, TrendingUp, Server, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -30,19 +30,35 @@ const Dashboard = () => {
   
   const [pipelines, setPipelines] = useState<Pipeline[]>([
     {
-      name: "RustCI Deploy",
-      description: "Clone and deploy RustCI repository", 
+      name: "RustCI Production Deploy",
+      description: "Production deployment pipeline for RustCI with comprehensive testing and monitoring", 
       status: "success",
       lastRun: "2 minutes ago",
-      repository: "RustCI",
+      repository: "RustCI/production",
       branch: "main"
     },
     {
-      name: "Test Pipeline",
-      description: "Simple test pipeline with shell commands",
-      status: "idle",
-      repository: "RustCI", 
+      name: "Frontend Build & Test",
+      description: "React TypeScript frontend with comprehensive test suite and build optimization",
+      status: "running",
+      lastRun: "5 minutes ago",
+      repository: "RustCI/frontend", 
       branch: "develop"
+    },
+    {
+      name: "API Integration Pipeline",
+      description: "Backend API integration tests with database migrations and performance testing",
+      status: "success",
+      lastRun: "12 minutes ago",
+      repository: "RustCI/backend",
+      branch: "feature/api-v2"
+    },
+    {
+      name: "Security Audit Pipeline",
+      description: "Automated security scanning and vulnerability assessment",
+      status: "idle",
+      repository: "RustCI/security", 
+      branch: "main"
     }
   ]);
 
@@ -75,8 +91,8 @@ const Dashboard = () => {
     setIsTransitioning(true);
     
     toast({
-      title: "Opening Dashboard 🚀",
-      description: "Transitioning from Earth view to dashboard",
+      title: "Dashboard Loading",
+      description: "Transitioning to enterprise dashboard view",
     });
 
     // Start transition sequence
@@ -95,7 +111,7 @@ const Dashboard = () => {
     ];
 
     steps.forEach((step, i) => {
-      setTimeout(step, i * 800);
+      setTimeout(step, i * 600);
     });
   };
 
@@ -109,7 +125,7 @@ const Dashboard = () => {
 
     // Simulate pipeline execution
     setTimeout(() => {
-      const success = Math.random() > 0.3; // 70% success rate
+      const success = Math.random() > 0.2; // 80% success rate
       setPipelines(prev => prev.map(p => 
         p.name === pipelineName 
           ? { 
@@ -121,22 +137,26 @@ const Dashboard = () => {
       ));
 
       toast({
-        title: success ? "Pipeline Completed" : "Pipeline Failed",
-        description: `${pipelineName} ${success ? "completed successfully" : "failed during execution"}.`,
+        title: success ? "Pipeline Completed Successfully" : "Pipeline Failed",
+        description: `${pipelineName} ${success ? "executed successfully with all tests passing" : "failed during execution - check logs for details"}.`,
         variant: success ? "default" : "destructive",
       });
-    }, 3000);
+    }, 5000);
   };
 
   const stats = {
     totalPipelines: pipelines.length,
     successfulBuilds: pipelines.filter(p => p.status === "success").length,
     runningBuilds: pipelines.filter(p => p.status === "running").length,
-    uptime: "99.9%"
+    failedBuilds: pipelines.filter(p => p.status === "failed").length,
+    uptime: "99.97%",
+    avgBuildTime: "4.2m",
+    deploymentsToday: 12,
+    testsExecuted: 1247
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative">
       <Navbar />
       
       {/* 3D Earth Container */}
@@ -177,12 +197,12 @@ const Dashboard = () => {
           
           {/* Overlay Instructions */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="text-center text-white/80 backdrop-blur-sm bg-black/20 p-8 rounded-lg">
-              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Dashboard Earth
+            <div className="text-center text-white/80 glass-card p-8 max-w-md mx-4">
+              <h1 className="text-4xl font-bold mb-4 text-enterprise-heading bg-gradient-to-r from-primary-light to-info bg-clip-text text-transparent">
+                RustCI Dashboard
               </h1>
-              <p className="text-lg mb-2">Click the Earth or scroll down to open dashboard</p>
-              <p className="text-sm opacity-70">Move your mouse to see vibration effects</p>
+              <p className="text-lg mb-2 text-enterprise">Click the Earth or scroll down to access dashboard</p>
+              <p className="text-sm opacity-70">Enterprise-grade CI/CD pipeline management</p>
             </div>
           </div>
         </div>
@@ -190,21 +210,30 @@ const Dashboard = () => {
 
       {/* Dashboard Content */}
       {showDashboard && (
-        <main ref={dashboardRef} className="container mx-auto px-6 py-20 space-y-8 relative z-20">
-          {/* Stats Overview - First to animate */}
+        <main ref={dashboardRef} className="container mx-auto px-6 py-20 space-y-12 relative z-20">
+          {/* Header Section */}
           <div className={`transition-all duration-1000 ${animationStep >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold mb-4">Dashboard Overview</h1>
-              <p className="text-muted-foreground">Real-time insights into your CI/CD pipelines</p>
+            <div className="text-center mb-12">
+              <h1 className="text-5xl font-bold mb-6 text-enterprise-heading bg-gradient-to-r from-primary via-info to-success bg-clip-text text-transparent">
+                Enterprise Dashboard
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-enterprise">
+                Real-time insights and comprehensive analytics for your CI/CD pipelines. 
+                Monitor, manage, and optimize your development workflows with enterprise-grade precision.
+              </p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          </div>
+
+          {/* Stats Overview - Enhanced Grid */}
+          <div className={`transition-all duration-1000 ${animationStep >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <StatsCard
                 title="Active Pipelines"
                 value={stats.totalPipelines}
                 description="Total configured pipelines"
                 icon={GitBranch}
                 color="primary"
+                trend="up"
               />
               <StatsCard
                 title="Successful Builds"
@@ -220,41 +249,89 @@ const Dashboard = () => {
                 description="Currently executing"
                 icon={Clock}
                 color="warning"
+                trend="up"
               />
               <StatsCard
                 title="System Uptime"
                 value={stats.uptime}
-                description="Last 7 days"
+                description="Last 30 days"
                 icon={Activity}
                 color="info"
                 trend="up"
               />
             </div>
+
+            {/* Additional Metrics Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatsCard
+                title="Avg Build Time"
+                value={stats.avgBuildTime}
+                description="Optimized performance"
+                icon={TrendingUp}
+                color="info"
+                trend="down"
+              />
+              <StatsCard
+                title="Deployments Today"
+                value={stats.deploymentsToday}
+                description="Successful deployments"
+                icon={Server}
+                color="success"
+                trend="up"
+              />
+              <StatsCard
+                title="Tests Executed"
+                value={stats.testsExecuted.toLocaleString()}
+                description="Last 24 hours"
+                icon={Zap}
+                color="primary"
+                trend="up"
+              />
+              <StatsCard
+                title="Failed Builds"
+                value={stats.failedBuilds}
+                description="Requiring attention"
+                icon={Activity}
+                color="warning"
+                trend="down"
+              />
+            </div>
           </div>
 
-          {/* Pipelines Section - Second to animate */}
+          {/* Main Content Grid */}
           <div className={`transition-all duration-1000 delay-300 ${animationStep >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Pipelines Section - Enhanced */}
               <div className="lg:col-span-2 space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-foreground">Pipelines</h2>
-                  <div className="flex gap-2">
+                  <div>
+                    <h2 className="text-3xl font-bold text-foreground text-enterprise-heading">Pipeline Management</h2>
+                    <p className="text-muted-foreground text-enterprise mt-2">Monitor and manage your CI/CD workflows</p>
+                  </div>
+                  <div className="flex gap-3">
                     <Button
-                      onClick={() => navigate("/pipelines")}
-                      className="bg-primary hover:bg-primary/90"
+                      onClick={() => navigate("/pipeline-builder")}
+                      className="glass-button hover:shadow-glow-primary"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      View All Pipelines
+                      Create Pipeline
+                    </Button>
+                    <Button
+                      onClick={() => navigate("/pipelines")}
+                      variant="outline"
+                      className="glass-button"
+                    >
+                      View All
                     </Button>
                   </div>
                 </div>
                 
-                <div className="grid gap-4">
+                <div className="grid gap-6">
                   {pipelines.map((pipeline, index) => (
                     <div 
                       key={index}
                       className={`transition-all duration-700 ${animationStep >= 2 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}
-                      style={{ transitionDelay: `${index * 200}ms` }}
+                      style={{ transitionDelay: `${index * 150}ms` }}
                     >
                       <PipelineCard
                         name={pipeline.name}
@@ -270,7 +347,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Recent Builds - Third to animate */}
+              {/* Recent Builds - Enhanced */}
               <div className={`space-y-6 transition-all duration-1000 delay-600 ${animationStep >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                 <RecentBuilds />
               </div>
@@ -279,8 +356,8 @@ const Dashboard = () => {
         </main>
       )}
       
-      {/* Background with transition effect */}
-      <div className={`fixed inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5 transition-opacity duration-2000 ${showDashboard ? 'opacity-100' : 'opacity-0'}`} style={{ zIndex: -1 }} />
+      {/* Enhanced Background with Gradient Mesh */}
+      <div className={`fixed inset-0 gradient-mesh transition-opacity duration-2000 ${showDashboard ? 'opacity-100' : 'opacity-0'}`} style={{ zIndex: -1 }} />
     </div>
   );
 };
