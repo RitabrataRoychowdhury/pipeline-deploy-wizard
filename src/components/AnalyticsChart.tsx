@@ -27,29 +27,31 @@ export const AnalyticsChart = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
       {/* Build Analytics */}
-      <Card className="border-border/40 bg-card/60 backdrop-blur-sm shadow-lg">
-        <CardHeader className="pb-4">
+      <Card className="border-border/30 bg-card/60 backdrop-blur-md shadow-xl hover:shadow-2xl transition-all duration-300 group">
+        <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
+              <CardTitle className="text-xl font-semibold flex items-center gap-3 group-hover:text-primary transition-colors">
+                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <Activity className="h-5 w-5 text-primary" />
+                </div>
                 Build Analytics
               </CardTitle>
-              <CardDescription className="mt-1">
+              <CardDescription className="mt-2 text-base font-medium">
                 Weekly build performance and success rates
               </CardDescription>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  7 days
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-card border-border/40">
-                <DropdownMenuItem>Last 7 days</DropdownMenuItem>
-                <DropdownMenuItem>Last 30 days</DropdownMenuItem>
-                <DropdownMenuItem>Last 3 months</DropdownMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 bg-background/60 backdrop-blur-sm hover:bg-background/80 transition-all">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    7 days
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-background/95 backdrop-blur-md border-border/40 shadow-xl">
+                <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">Last 7 days</DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">Last 30 days</DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">Last 3 months</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -85,29 +87,31 @@ export const AnalyticsChart = () => {
       </Card>
 
       {/* Deployment Trends */}
-      <Card className="border-border/40 bg-card/60 backdrop-blur-sm shadow-lg">
-        <CardHeader className="pb-4">
+      <Card className="border-border/30 bg-card/60 backdrop-blur-md shadow-xl hover:shadow-2xl transition-all duration-300 group">
+        <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
+              <CardTitle className="text-xl font-semibold flex items-center gap-3 group-hover:text-primary transition-colors">
+                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                </div>
                 Deployment Trends
               </CardTitle>
-              <CardDescription className="mt-1">
+              <CardDescription className="mt-2 text-base font-medium">
                 Monthly deployment and build volume trends
               </CardDescription>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8">
+                <Button variant="outline" size="sm" className="h-8 bg-background/60 backdrop-blur-sm hover:bg-background/80 transition-all">
                   <GitBranch className="h-4 w-4 mr-2" />
                   All branches
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-card border-border/40">
-                <DropdownMenuItem>All branches</DropdownMenuItem>
-                <DropdownMenuItem>main only</DropdownMenuItem>
-                <DropdownMenuItem>develop only</DropdownMenuItem>
+              <DropdownMenuContent align="end" className="bg-background/95 backdrop-blur-md border-border/40 shadow-xl">
+                <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">All branches</DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">main only</DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">develop only</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

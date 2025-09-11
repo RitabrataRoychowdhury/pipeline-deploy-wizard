@@ -107,55 +107,64 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/50 to-primary/3 relative overflow-hidden">
+      {/* Subtle background patterns */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary)/0.03),transparent_50%)]" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-tl from-blue-500/5 to-transparent rounded-full blur-3xl" />
+      
       <Navbar />
       
       {/* Breadcrumb Navigation */}
-      <div className="container mx-auto px-6 pt-4">
+      <div className="container mx-auto px-6 pt-4 relative">
         <Breadcrumb />
       </div>
       
       {/* Dashboard Content */}
-      <main ref={dashboardRef} className="container mx-auto px-6 py-8 space-y-8">
+      <main ref={dashboardRef} className="container mx-auto px-6 py-8 space-y-10 relative">
         {/* Header Section */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-between mb-6">
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-between mb-8">
             <div className="flex-1">
-              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <div className="inline-flex items-center gap-3 mb-6">
+                <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                <span className="text-sm font-medium text-success uppercase tracking-wider">System Online</span>
+              </div>
+              <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
                 RustCI Dashboard
               </h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Real-time insights and comprehensive analytics for your CI/CD pipelines. 
-                Monitor, manage, and optimize your development workflows.
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                Real-time insights and comprehensive analytics for your CI/CD pipelines.<br />
+                <span className="text-lg">Monitor, manage, and optimize your development workflows with enterprise-grade precision.</span>
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="h-9 bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 transition-all duration-200">
                     <Filter className="h-4 w-4 mr-2" />
                     Filters
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-card border-border/40">
-                  <DropdownMenuItem>All Pipelines</DropdownMenuItem>
-                  <DropdownMenuItem>Active Only</DropdownMenuItem>
-                  <DropdownMenuItem>Failed Only</DropdownMenuItem>
-                  <DropdownMenuItem>Recently Updated</DropdownMenuItem>
+                <DropdownMenuContent align="end" className="bg-background/95 backdrop-blur-md border-border/40 shadow-xl">
+                  <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">All Pipelines</DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">Active Only</DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">Failed Only</DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">Recently Updated</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="h-9 bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 transition-all duration-200">
                     <Settings className="h-4 w-4 mr-2" />
-                    View Options
+                    View
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-card border-border/40">
-                  <DropdownMenuItem>Compact View</DropdownMenuItem>
-                  <DropdownMenuItem>Detailed View</DropdownMenuItem>
-                  <DropdownMenuItem>Grid Layout</DropdownMenuItem>
-                  <DropdownMenuItem>List Layout</DropdownMenuItem>
+                <DropdownMenuContent align="end" className="bg-background/95 backdrop-blur-md border-border/40 shadow-xl">
+                  <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">Compact View</DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">Detailed View</DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">Grid Layout</DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-primary/10 cursor-pointer">List Layout</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -166,7 +175,7 @@ const Dashboard = () => {
         <AnalyticsChart />
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           <StatsCard
             title="Active Pipelines"
             value={stats.totalPipelines}
@@ -243,13 +252,16 @@ const Dashboard = () => {
           <div className="lg:col-span-2 space-y-8">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Pipeline Management</h2>
-                <p className="text-muted-foreground mt-1">Monitor and manage your CI/CD workflows</p>
+                <h2 className="text-3xl font-bold text-foreground flex items-center gap-3">
+                  <div className="w-1 h-8 bg-gradient-to-b from-primary to-blue-600 rounded-full" />
+                  Pipeline Management
+                </h2>
+                <p className="text-muted-foreground mt-2 text-lg font-medium">Monitor and manage your CI/CD workflows</p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <Button
                   onClick={() => navigate("/pipelines/builder")}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  className="bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 h-11 px-6"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create Pipeline
@@ -257,6 +269,7 @@ const Dashboard = () => {
                 <Button
                   onClick={() => navigate("/pipelines")}
                   variant="outline"
+                  className="h-11 px-6 bg-background/60 backdrop-blur-sm hover:bg-background/80 transition-all duration-200"
                 >
                   View All
                 </Button>
