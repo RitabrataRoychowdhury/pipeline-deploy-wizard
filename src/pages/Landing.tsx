@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ResponsiveBackgroundImage } from "@/components/ui/background-image";
+import { getBackgroundImage, preloadBackgroundImages } from "@/lib/background-images";
 import { 
   GitBranch, 
   Rocket, 
@@ -115,6 +117,11 @@ export default function Landing() {
 
   usePageTitle("Enterprise CI/CD Platform - RustCI");
 
+  // Preload background images for better performance
+  useEffect(() => {
+    preloadBackgroundImages();
+  }, []);
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -158,17 +165,22 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-800/10 to-transparent"></div>
-      </div>
-      
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+    <ResponsiveBackgroundImage
+      images={getBackgroundImage('landing')}
+      alt="Professional CI/CD platform background with geometric patterns"
+      className="min-h-screen"
+      overlayClassName="bg-gradient-to-br from-slate-900/85 via-blue-900/70 to-slate-900/85"
+      priority={true}
+    >
+      {/* Enhanced animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/8 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/6 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        
+        {/* Additional floating elements for depth */}
+        <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-blue-400/5 to-purple-400/5 rounded-full blur-2xl animate-float" />
+        <div className="absolute bottom-20 right-20 w-40 h-40 bg-gradient-to-br from-cyan-400/5 to-blue-400/5 rounded-full blur-2xl animate-float" style={{ animationDelay: '1.5s' }} />
       </div>
 
       {/* Theme Toggle */}
@@ -176,21 +188,21 @@ export default function Landing() {
         <ThemeToggle />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-16">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-500/10 rounded-full mb-8 animate-float">
             <Rocket className="h-10 w-10 text-blue-400" />
           </div>
           
-          <h1 className="text-6xl font-bold text-white mb-6">
+          <h1 className="text-6xl font-bold text-white mb-6 drop-shadow-lg">
             Enterprise CI/CD
-            <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-blue-300 via-purple-300 to-cyan-300 bg-clip-text text-transparent drop-shadow-sm">
               Made Simple
             </span>
           </h1>
           
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-slate-200 max-w-3xl mx-auto mb-8 drop-shadow-md">
             The most powerful CI/CD platform trusted by Fortune 500 companies. 
             Deploy faster, scale infinitely, and ship with confidence.
           </p>
@@ -199,8 +211,8 @@ export default function Landing() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto mb-12">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
-                <div className="text-sm text-slate-400">{stat.label}</div>
+                <div className="text-3xl font-bold text-white mb-2 drop-shadow-md">{stat.value}</div>
+                <div className="text-sm text-slate-300 drop-shadow-sm">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -209,8 +221,8 @@ export default function Landing() {
         {/* Authentication Section */}
         <div className="max-w-4xl mx-auto mb-16">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white mb-4">Choose Your Git Provider</h2>
-            <p className="text-slate-300">Connect with your preferred development platform to get started</p>
+            <h2 className="text-3xl font-bold text-white mb-4 drop-shadow-lg">Choose Your Git Provider</h2>
+            <p className="text-slate-200 drop-shadow-md">Connect with your preferred development platform to get started</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -221,8 +233,8 @@ export default function Landing() {
               return (
                 <Card 
                   key={connector.id}
-                  className={`relative cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl group bg-slate-800/50 backdrop-blur-sm border-slate-700 ${
-                    isSelected ? 'ring-2 ring-blue-400 shadow-lg scale-105 bg-slate-800/70' : ''
+                  className={`relative cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl group bg-slate-800/60 backdrop-blur-md border-slate-600/50 shadow-lg ${
+                    isSelected ? 'ring-2 ring-blue-400 shadow-xl scale-105 bg-slate-800/80' : ''
                   }`}
                   onClick={() => handleConnectorSelect(connector.id)}
                   style={{ animationDelay: `${index * 100}ms` }}
@@ -278,7 +290,7 @@ export default function Landing() {
             <Button
               variant="outline"
               onClick={handleDemoMode}
-              className="px-8 py-3 bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:text-white backdrop-blur-sm"
+              className="px-8 py-3 bg-slate-800/60 border-slate-500 text-slate-200 hover:bg-slate-700/70 hover:text-white backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <Play className="mr-2 h-4 w-4" />
               Try Demo Mode
@@ -289,8 +301,8 @@ export default function Landing() {
         {/* Features Section */}
         <div className="max-w-6xl mx-auto mb-16">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">Why Choose RustCI?</h2>
-            <p className="text-slate-300 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-4 drop-shadow-lg">Why Choose RustCI?</h2>
+            <p className="text-slate-200 max-w-2xl mx-auto drop-shadow-md">
               Built for modern development teams who demand speed, security, and scalability
             </p>
           </div>
@@ -301,7 +313,7 @@ export default function Landing() {
               return (
                 <Card 
                   key={index}
-                  className="bg-slate-800/30 backdrop-blur-sm border-slate-700 hover:bg-slate-800/50 transition-all duration-300 hover:scale-105"
+                  className="bg-slate-800/40 backdrop-blur-md border-slate-600/50 hover:bg-slate-800/60 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                   <CardHeader>
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-500/10 rounded-lg mb-4">
@@ -310,7 +322,7 @@ export default function Landing() {
                     <CardTitle className="text-white">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-slate-300">{feature.description}</p>
+                    <p className="text-slate-200">{feature.description}</p>
                   </CardContent>
                 </Card>
               );
@@ -320,29 +332,49 @@ export default function Landing() {
 
         {/* Trust Section */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 bg-slate-800/30 backdrop-blur-sm border border-slate-700 rounded-full px-6 py-3 mb-8">
+          <div className="inline-flex items-center gap-2 bg-slate-800/50 backdrop-blur-md border border-slate-600/50 rounded-full px-6 py-3 mb-8 shadow-lg">
             <Lock className="h-4 w-4 text-green-400" />
-            <span className="text-slate-300">SOC 2 Type II Certified</span>
+            <span className="text-slate-200">SOC 2 Type II Certified</span>
             <CheckCircle className="h-4 w-4 text-green-400" />
-            <span className="text-slate-300">GDPR Compliant</span>
+            <span className="text-slate-200">GDPR Compliant</span>
           </div>
           
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-300 text-sm drop-shadow-sm">
             Trusted by developers at Microsoft, Google, Netflix, and 500+ other companies
           </p>
         </div>
       </div>
 
-      {/* Custom CSS for animations */}
+      {/* Custom CSS for enhanced animations */}
       <style>{`
         @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-8px) rotate(1deg); }
+          66% { transform: translateY(-12px) rotate(-1deg); }
         }
         .animate-float {
-          animation: float 3s ease-in-out infinite;
+          animation: float 4s ease-in-out infinite;
+        }
+        
+        /* Enhanced pulse animation for background elements */
+        @keyframes enhanced-pulse {
+          0%, 100% { 
+            opacity: 0.4;
+            transform: scale(1);
+          }
+          50% { 
+            opacity: 0.8;
+            transform: scale(1.05);
+          }
+        }
+        
+        /* Subtle parallax effect */
+        @media (prefers-reduced-motion: no-preference) {
+          .animate-pulse {
+            animation: enhanced-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          }
         }
       `}</style>
-    </div>
+    </ResponsiveBackgroundImage>
   );
 }

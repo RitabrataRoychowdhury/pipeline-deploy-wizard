@@ -17,7 +17,7 @@ describe('ErrorHandler', () => {
   });
 
   afterEach(() => {
-    consoleSpy.restore();
+    consoleSpy.mockRestore();
   });
 
   describe('PipelineError', () => {
@@ -225,7 +225,7 @@ describe('Recovery strategies', () => {
     
     expect(strategies).toHaveLength(1);
     expect(strategies[0].name).toBe('Auto-fix');
-    expect(strategies[0].description).toContain('automatically remove');
+    expect(strategies[0].description).toContain('Automatically remove');
   });
 
   it('should create appropriate recovery strategies for save failure', async () => {

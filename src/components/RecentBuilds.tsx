@@ -66,49 +66,64 @@ const RecentBuilds = () => {
   };
 
   return (
-    <Card className="bg-gradient-card border-border/50">
-      <CardHeader>
+    <Card className="bg-gradient-card border-border/50 shadow-lg">
+      <CardHeader className="pb-4">
         <CardTitle className="flex items-center justify-between">
-          <span>Recent Builds</span>
-          <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 bg-gradient-to-b from-info to-info/60 rounded-full" />
+            <span className="text-xl font-bold">Recent Builds</span>
+          </div>
+          <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 hover:bg-primary/10 transition-all duration-200">
             View All
           </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {mockBuilds.map((build) => (
-            <div key={build.id} className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:border-primary/30 transition-colors">
-              <div className="flex items-center space-x-3">
-                {getStatusIcon(build.status)}
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-medium text-foreground">{build.pipeline}</span>
-                    {getStatusBadge(build.status)}
+            <div key={build.id} className="group p-4 rounded-lg border border-border/50 hover:border-primary/30 hover:bg-muted/20 transition-all duration-200">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start space-x-3 flex-1">
+                  <div className="mt-1">
+                    {getStatusIcon(build.status)}
                   </div>
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                    <div className="flex items-center space-x-1">
-                      <GitCommit className="h-3 w-3" />
-                      <span>{build.commit}</span>
+                  <div className="space-y-2 flex-1">
+                    <div className="flex items-center space-x-2 flex-wrap">
+                      <span className="font-semibold text-foreground text-base">{build.pipeline}</span>
+                      {getStatusBadge(build.status)}
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <Play className="h-3 w-3" />
-                      <span>{build.branch}</span>
+                    <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1">
+                          <GitCommit className="h-3 w-3" />
+                          <span className="font-mono text-xs bg-muted/50 px-2 py-1 rounded">{build.commit}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Play className="h-3 w-3" />
+                          <span className="font-medium">{build.branch}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>{build.startTime}</span>
+                        </div>
+                        {build.duration && (
+                          <span className="font-medium text-primary">Duration: {build.duration}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>{build.startTime}</span>
-                    </div>
-                    {build.duration && (
-                      <span>• {build.duration}</span>
-                    )}
                   </div>
                 </div>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all duration-200"
+                >
+                  View Logs
+                </Button>
               </div>
-              
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                View Logs
-              </Button>
             </div>
           ))}
         </div>

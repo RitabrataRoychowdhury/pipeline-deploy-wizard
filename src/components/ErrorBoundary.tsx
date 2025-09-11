@@ -29,7 +29,7 @@ class ErrorBoundary extends Component<Props, State> {
       errorInfo: null,
       errorId: null,
     };
-    this.errorHandler = new ErrorHandler();
+    this.errorHandler = ErrorHandler.getInstance();
   }
 
   static getDerivedStateFromError(error: Error): State {
@@ -42,7 +42,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    const errorId = this.errorHandler.handleError(error, {
+    this.errorHandler.handleError(error, {
       component: 'ErrorBoundary',
       action: 'componentDidCatch',
       timestamp: new Date(),
@@ -179,7 +179,7 @@ export default ErrorBoundary;
 
 // Utility hook for handling errors in functional components
 export const useErrorHandler = () => {
-  const errorHandler = React.useMemo(() => new ErrorHandler(), []);
+  const errorHandler = React.useMemo(() => ErrorHandler.getInstance(), []);
 
   const handleError = React.useCallback((error: Error, context?: any) => {
     errorHandler.handleError(error, {

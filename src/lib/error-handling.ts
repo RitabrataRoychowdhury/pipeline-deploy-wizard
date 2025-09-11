@@ -203,13 +203,14 @@ export class ErrorHandler {
 
   // Infer error code from standard errors
   private inferErrorCode(error: Error): string {
-    if (error.message.includes('network') || error.message.includes('fetch')) {
+    const message = error.message.toLowerCase();
+    if (message.includes('network') || message.includes('fetch')) {
       return ERROR_CODES.NETWORK_ERROR;
     }
-    if (error.message.includes('timeout')) {
+    if (message.includes('timeout')) {
       return ERROR_CODES.TIMEOUT_ERROR;
     }
-    if (error.message.includes('permission') || error.message.includes('unauthorized')) {
+    if (message.includes('permission') || message.includes('unauthorized')) {
       return ERROR_CODES.PERMISSION_DENIED;
     }
     return ERROR_CODES.UNKNOWN_ERROR;
@@ -217,13 +218,14 @@ export class ErrorHandler {
 
   // Infer error severity
   private inferSeverity(error: Error): 'low' | 'medium' | 'high' | 'critical' {
-    if (error.message.includes('critical') || error.message.includes('fatal')) {
+    const message = error.message.toLowerCase();
+    if (message.includes('critical') || message.includes('fatal')) {
       return 'critical';
     }
-    if (error.message.includes('network') || error.message.includes('save')) {
+    if (message.includes('network') || message.includes('save')) {
       return 'high';
     }
-    if (error.message.includes('validation') || error.message.includes('warning')) {
+    if (message.includes('validation') || message.includes('warning')) {
       return 'medium';
     }
     return 'low';

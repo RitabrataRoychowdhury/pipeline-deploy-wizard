@@ -3,6 +3,7 @@ import { Move, Plus } from 'lucide-react';
 import { ComponentDefinition } from '@/lib/pipeline-utils';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAnimations } from '@/hooks/useAnimations';
 
 interface DraggableComponentProps {
   component: ComponentDefinition;
@@ -17,6 +18,7 @@ export const DraggableComponent: React.FC<DraggableComponentProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const { isEnabled, getClass } = useAnimations();
 
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -86,9 +88,10 @@ export const DraggableComponent: React.FC<DraggableComponentProps> = ({
           <div
             className={`
               group relative bg-card hover:bg-accent/50 border border-border/50 rounded-lg p-3 
-              cursor-grab active:cursor-grabbing transition-all duration-200 
-              hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5
-              ${isDragging ? 'opacity-50 scale-95' : 'hover:scale-[1.02]'}
+              cursor-grab active:cursor-grabbing transition-all duration-200 ease-out will-change-transform
+              hover:shadow-lg hover:border-primary/30 hover:-translate-y-1
+              ${isDragging ? 'opacity-50 scale-95 rotate-2 shadow-xl z-50' : 'hover:scale-105'}
+              ${!isEnabled ? 'hover:scale-100 hover:translate-y-0' : ''}
             `}
             draggable
             onDragStart={handleDragStart}
