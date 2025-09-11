@@ -23,7 +23,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   if (!isAuthenticated) {
     // Redirect to landing page with return url
-    return <Navigate to="/" state={{ from: location }} replace />;
+    return <Navigate to="/lander" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

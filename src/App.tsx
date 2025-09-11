@@ -12,7 +12,11 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { initializeBrowserCompatibility } from "@/lib/browser-compatibility";
 import { initializeAccessibility } from "@/lib/accessibility";
 import Index from "./pages/Index";
-import Landing from "./pages/Landing";
+import Landing from "./pages/landing page/Landing";
+// Demo-mode pages (JSON-backed, no network)
+import DemoDashboard from "./pages/demo/Dashboard";
+import DemoPipelines from "./pages/demo/Pipelines";
+import DemoPipelineBuilder from "./pages/demo/PipelineBuilder";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Pipelines from "./pages/Pipelines";
@@ -88,7 +92,14 @@ const App = () => {
               <Sonner />
               <BrowserRouter>
                 <Routes>
-                  <Route path="/" element={<PageTransition><Landing /></PageTransition>} />
+                  {/* Root shows the actual app (dashboard). Landing moved to /lander */}
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/lander" element={<PageTransition><Landing /></PageTransition>} />
+                  {/* Demo mode: all URLs under /demo, uses local JSON only */}
+                  <Route path="/demo" element={<PageTransition><DemoDashboard /></PageTransition>} />
+                  <Route path="/demo/dashboard" element={<PageTransition><DemoDashboard /></PageTransition>} />
+                  <Route path="/demo/pipelines" element={<PageTransition><DemoPipelines /></PageTransition>} />
+                  <Route path="/demo/pipelines/builder" element={<PageTransition><DemoPipelineBuilder /></PageTransition>} />
                   <Route path="/welcome" element={<PageTransition><Welcome /></PageTransition>} />
                   <Route path="/dashboard" element={
                     <ProtectedRoute>

@@ -13,14 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const Navbar = () => {
+// Demo navbar: all links are under /demo/* and never leave demo mode
+const DemoNavbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
+
+  const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = () => {
     logout();
@@ -37,50 +36,28 @@ const Navbar = () => {
               RustCI
             </h1>
           </Link>
-          
+
           <div className="flex items-center space-x-1">
-            <Button 
+            <Button
               asChild
-              variant="ghost" 
-              size="sm" 
-              className={isActive("/dashboard") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}
+              variant="ghost"
+              size="sm"
+              className={isActive("/demo/dashboard") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}
             >
-              <Link to="/dashboard">
+              <Link to="/demo/dashboard">
                 <Activity className="h-4 w-4 mr-2" />
                 Dashboard
               </Link>
             </Button>
-            <Button 
+            <Button
               asChild
-              variant="ghost" 
-              size="sm" 
-              className={isActive("/pipelines") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}
+              variant="ghost"
+              size="sm"
+              className={isActive("/demo/pipelines") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}
             >
-              <Link to="/pipelines">
+              <Link to="/demo/pipelines">
                 <Database className="h-4 w-4 mr-2" />
                 Pipelines
-              </Link>
-            </Button>
-            <Button 
-              asChild
-              variant="ghost" 
-              size="sm" 
-              className={isActive("/repositories") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}
-            >
-              <Link to="/repositories">
-                <GitBranch className="h-4 w-4 mr-2" />
-                Repositories
-              </Link>
-            </Button>
-            <Button 
-              asChild
-              variant="ghost" 
-              size="sm" 
-              className={isActive("/animations") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}
-            >
-              <Link to="/animations">
-                <Activity className="h-4 w-4 mr-2" />
-                Animations
               </Link>
             </Button>
           </div>
@@ -88,17 +65,13 @@ const Navbar = () => {
 
         <div className="flex items-center space-x-3">
           <ThemeToggle />
-          <Button 
-            asChild
-            size="sm" 
-            className="bg-gradient-primary hover:opacity-90 shadow-primary"
-          >
-            <Link to="/pipelines/builder">
+          <Button asChild size="sm" className="bg-gradient-primary hover:opacity-90 shadow-primary">
+            <Link to="/demo/pipelines/builder">
               <Plus className="h-4 w-4 mr-2" />
               New Pipeline
             </Link>
           </Button>
-          
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -115,17 +88,13 @@ const Navbar = () => {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground capitalize">
-                      via {user.provider}
-                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <p className="text-xs leading-none text-muted-foreground capitalize">via {user.provider}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/settings" className="cursor-pointer">
+                  <Link to="/demo/settings" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </Link>
@@ -138,12 +107,7 @@ const Navbar = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button 
-              asChild
-              variant="ghost" 
-              size="sm" 
-              className="text-muted-foreground hover:text-foreground"
-            >
+            <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               <Link to="/lander">
                 <User className="h-4 w-4 mr-2" />
                 Login
@@ -156,4 +120,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default DemoNavbar;
