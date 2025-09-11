@@ -63,8 +63,8 @@ export const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonPr
           
           const result = onClick(event);
           
-          // Handle async operations
-          if (result && typeof result === 'object' && 'then' in result) {
+          // Handle async operations - check if result is a promise
+          if (result !== undefined && result !== null && typeof result === 'object' && typeof (result as any).then === 'function') {
             try {
               await (result as Promise<any>);
               setInternalSuccess(true);
@@ -72,7 +72,7 @@ export const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonPr
               setInternalError(true);
               console.error('Button action failed:', error);
             }
-          } else if (result !== undefined) {
+          } else {
             setInternalSuccess(true);
           }
         } catch (error) {

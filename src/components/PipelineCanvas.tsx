@@ -116,7 +116,7 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
 
   // Custom node types
   const nodeTypes: NodeTypes = {
-    pipelineNode: PipelineNode,
+    pipelineNode: PipelineNode as any,
   };
 
   // Save state to history for undo/redo
@@ -169,7 +169,7 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
   }, [readOnly]);
 
   const onDragLeave = useCallback((event: React.DragEvent) => {
-    if (!reactFlowWrapper.current?.contains(event.relatedTarget as Node)) {
+    if (!reactFlowWrapper.current?.contains(event.relatedTarget as Element)) {
       setIsDragOver(false);
     }
   }, []);
@@ -269,7 +269,11 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
     };
     
     setEdges((eds) => addEdge(newEdge, eds));
-    externalOnConnect?.(newEdge);
+    externalOnConnect?.({ 
+      ...newEdge, 
+      sourceHandle: newEdge.sourceHandle || '', 
+      targetHandle: newEdge.targetHandle || '' 
+    });
   }, [readOnly, setEdges, externalOnConnect, saveToHistory]);
 
   // Handle node selection
@@ -327,7 +331,7 @@ const PipelineCanvasInternal: React.FC<PipelineCanvasProps> = ({
       
       const idMapping = new Map<string, string>();
       const newNodes = clipboardData.nodes.map((node: Node) => {
-        const newId = generateNodeId(node.data.stepType);
+        const newId = generateNodeId(String(node.data?.stepType || 'default'));
         idMapping.set(node.id, newId);
         
         return {

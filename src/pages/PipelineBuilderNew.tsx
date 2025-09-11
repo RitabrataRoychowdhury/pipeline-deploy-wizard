@@ -217,7 +217,7 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
 
               <ActionButton
                 action="export"
-                onAction={handleExportYAML}
+                onAction={async () => { await handleExportYAML(); }}
                 disabled={nodes.length === 0}
                 size="sm"
                 className="gap-2"
@@ -311,7 +311,7 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
             <div className="p-4 border-t space-y-2">
               <ActionButton
                 action="copy"
-                onAction={handleCopyYAML}
+                onAction={async () => { await handleCopyYAML(); }}
                 className="w-full gap-2"
                 size="sm"
                 disabled={nodes.length === 0}
@@ -323,7 +323,7 @@ export const PipelineBuilderNew: React.FC<PipelineBuilderNewProps> = ({
               
               <ActionButton
                 action="export"
-                onAction={handleExportYAML}
+                onAction={async () => { await handleExportYAML(); }}
                 variant="outline"
                 className="w-full gap-2"
                 size="sm"

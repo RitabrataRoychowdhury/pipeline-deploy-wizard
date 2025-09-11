@@ -19,7 +19,7 @@ interface PipelineNodeData {
   };
 }
 
-export interface PipelineNodeProps extends NodeProps<PipelineNodeData> {
+export interface PipelineNodeProps extends NodeProps<any> {
   data: PipelineNodeData;
 }
 
