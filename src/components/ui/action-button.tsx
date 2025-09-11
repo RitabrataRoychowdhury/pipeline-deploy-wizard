@@ -92,8 +92,8 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
     const ActionIcon = icon || config.icon;
     const buttonVariant = variant || config.variant;
 
-    const shouldConfirm = confirmAction ?? config.requiresConfirmation;
-    const confirmMsg = confirmMessage || config.defaultConfirmMessage;
+    const shouldConfirm = confirmAction ?? (config as any).requiresConfirmation;
+    const confirmMsg = confirmMessage || (config as any).defaultConfirmMessage;
 
     React.useEffect(() => {
       if (isSuccess) {

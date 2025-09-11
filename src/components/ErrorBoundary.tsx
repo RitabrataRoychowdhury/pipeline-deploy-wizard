@@ -46,12 +46,12 @@ class ErrorBoundary extends Component<Props, State> {
       component: 'ErrorBoundary',
       action: 'componentDidCatch',
       timestamp: new Date(),
-      errorInfo,
+      metadata: { errorInfo },
     });
 
     this.setState({
       errorInfo,
-      errorId,
+      errorId: Date.now().toString(),
     });
 
     // Call optional error callback

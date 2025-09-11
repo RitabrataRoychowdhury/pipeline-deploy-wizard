@@ -205,7 +205,7 @@ export const ComponentPalette = ({
         className={cn("fixed top-4 left-4 z-20", className)}
         title="Open component palette"
       >
-        <category.icon className="h-4 w-4" />
+        {categories[0] && React.createElement(categories[0].icon, { className: "h-4 w-4" })}
       </Button>
     );
   }

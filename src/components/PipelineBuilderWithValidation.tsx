@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Node, Edge, ReactFlow, Background, Controls, MiniMap } from '@xyflow/react';
 import { PipelineNode, PipelineEdge } from '@/lib/pipeline-utils';
 import { ValidationStatus } from '@/components/ValidationStatus';
-import { ErrorBoundary, useErrorHandler } from '@/components/ErrorBoundary';
+import ErrorBoundary, { useErrorHandler } from '@/components/ErrorBoundary';
 import { useAutoSave, useSaveStatus, useSaveShortcuts, useUnsavedChangesWarning } from '@/hooks/useAutoSave';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

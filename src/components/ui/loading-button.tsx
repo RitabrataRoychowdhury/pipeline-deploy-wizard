@@ -64,15 +64,15 @@ export const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonPr
           const result = onClick(event);
           
           // Handle async operations
-          if (result instanceof Promise) {
+          if (result && typeof result === 'object' && 'then' in result) {
             try {
-              await result;
+              await (result as Promise<any>);
               setInternalSuccess(true);
             } catch (error) {
               setInternalError(true);
               console.error('Button action failed:', error);
             }
-          } else {
+          } else if (result !== undefined) {
             setInternalSuccess(true);
           }
         } catch (error) {
