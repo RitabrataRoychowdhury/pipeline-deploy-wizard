@@ -5,10 +5,12 @@ import PipelineCard from "@/components/PipelineCard";
 import StatsCard from "@/components/StatsCard";
 import RecentBuilds from "@/components/RecentBuilds";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { Activity, GitBranch, CheckCircle, Clock, Plus, TrendingUp, Server, Zap } from "lucide-react";
+import { Activity, GitBranch, CheckCircle, Clock, Plus, TrendingUp, Server, Zap, Settings, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { AnalyticsChart } from "@/components/AnalyticsChart";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface Pipeline {
   name: string;
@@ -116,18 +118,55 @@ const Dashboard = () => {
       {/* Dashboard Content */}
       <main ref={dashboardRef} className="container mx-auto px-6 py-8 space-y-8">
         {/* Header Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
-            RustCI Dashboard
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Real-time insights and comprehensive analytics for your CI/CD pipelines. 
-            Monitor, manage, and optimize your development workflows.
-          </p>
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex-1">
+              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                RustCI Dashboard
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Real-time insights and comprehensive analytics for your CI/CD pipelines. 
+                Monitor, manage, and optimize your development workflows.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filters
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-card border-border/40">
+                  <DropdownMenuItem>All Pipelines</DropdownMenuItem>
+                  <DropdownMenuItem>Active Only</DropdownMenuItem>
+                  <DropdownMenuItem>Failed Only</DropdownMenuItem>
+                  <DropdownMenuItem>Recently Updated</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Settings className="h-4 w-4 mr-2" />
+                    View Options
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-card border-border/40">
+                  <DropdownMenuItem>Compact View</DropdownMenuItem>
+                  <DropdownMenuItem>Detailed View</DropdownMenuItem>
+                  <DropdownMenuItem>Grid Layout</DropdownMenuItem>
+                  <DropdownMenuItem>List Layout</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
         </div>
 
+        {/* Analytics Charts */}
+        <AnalyticsChart />
+
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           <StatsCard
             title="Active Pipelines"
             value={stats.totalPipelines}
@@ -163,7 +202,7 @@ const Dashboard = () => {
         </div>
 
         {/* Additional Metrics Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           <StatsCard
             title="Avg Build Time"
             value={stats.avgBuildTime}
@@ -199,9 +238,9 @@ const Dashboard = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Pipelines Section */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-foreground">Pipeline Management</h2>
@@ -224,7 +263,7 @@ const Dashboard = () => {
               </div>
             </div>
             
-            <div className="grid gap-6">
+            <div className="grid gap-8">
               {pipelines.map((pipeline, index) => (
                 <PipelineCard
                   key={index}
@@ -241,7 +280,7 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Builds */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             <RecentBuilds />
           </div>
         </div>

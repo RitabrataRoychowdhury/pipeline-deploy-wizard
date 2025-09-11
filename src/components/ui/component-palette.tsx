@@ -220,7 +220,7 @@ export const ComponentPalette = ({
       <div className="p-4 border-b border-border/50 bg-card/50">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <categories[0]?.icon className="h-5 w-5 text-primary" />
+            {categories[0]?.icon && React.createElement(categories[0].icon, { className: "h-5 w-5 text-primary" })}
             {title}
             <Badge variant="outline" className="text-xs">
               {totalComponents}
