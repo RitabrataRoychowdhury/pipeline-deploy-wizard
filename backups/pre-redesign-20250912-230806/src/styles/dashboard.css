@@ -1,0 +1,209 @@
+/* Professional dashboard animations and effects */
+@keyframes dashboard-float {
+  0%, 100% { 
+    transform: translateY(0px) scale(1); 
+    box-shadow: 0 4px 20px hsl(var(--primary) / 0.1);
+  }
+  50% { 
+    transform: translateY(-6px) scale(1.01); 
+    box-shadow: 0 8px 30px hsl(var(--primary) / 0.15);
+  }
+}
+
+@keyframes metric-pulse {
+  0%, 100% { 
+    transform: scale(1); 
+    filter: brightness(1);
+  }
+  50% { 
+    transform: scale(1.02); 
+    filter: brightness(1.05);
+  }
+}
+
+@keyframes professional-glow {
+  0%, 100% { 
+    box-shadow: 0 0 25px hsl(var(--primary) / 0.15), 0 4px 20px hsl(var(--primary) / 0.1); 
+  }
+  50% { 
+    box-shadow: 0 0 40px hsl(var(--primary) / 0.25), 0 8px 30px hsl(var(--primary) / 0.15); 
+  }
+}
+
+@keyframes status-indicator {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.7; 
+    transform: scale(1.1);
+  }
+}
+
+/* Professional dashboard card animations */
+.dashboard-card {
+  animation: dashboard-float 8s ease-in-out infinite;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-card:nth-child(2) {
+  animation-delay: -2.5s;
+}
+
+.dashboard-card:nth-child(3) {
+  animation-delay: -5s;
+}
+
+.dashboard-card:nth-child(4) {
+  animation-delay: -7.5s;
+}
+
+.metric-highlight {
+  animation: metric-pulse 3s ease-in-out infinite;
+}
+
+.professional-glow {
+  animation: professional-glow 4s ease-in-out infinite;
+}
+
+.status-pulse {
+  animation: status-indicator 2s ease-in-out infinite;
+}
+
+/* Enhanced card hover effects */
+.dashboard-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 40px hsl(var(--primary) / 0.2), 0 4px 20px hsl(var(--primary) / 0.1);
+  animation-play-state: paused;
+}
+
+/* Custom scrollbar for dashboard */
+.dashboard-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-scroll::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+.dashboard-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 3px;
+}
+
+.dashboard-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+/* Enhanced glass effect */
+.glass-effect {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Smooth chart animations */
+.recharts-surface {
+  overflow: visible;
+}
+
+.recharts-bar-rectangles .recharts-rectangle {
+  transition: all 0.3s ease;
+}
+
+.recharts-bar-rectangles .recharts-rectangle:hover {
+  opacity: 0.8;
+  filter: brightness(1.1);
+}
+
+/* Professional status indicators */
+.status-indicator {
+  position: relative;
+}
+
+.status-indicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140%;
+  height: 140%;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.15;
+  animation: professional-ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes professional-ping {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.15;
+  }
+  75% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* Professional section dividers */
+.section-divider {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--border)),
+    transparent
+  );
+  height: 1px;
+  margin: 2rem 0;
+}
+
+/* Enhanced gradient overlays */
+.gradient-overlay {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 0.05) 0%,
+    transparent 50%,
+    hsl(var(--success) / 0.03) 100%
+  );
+}
+
+/* Professional loading states */
+.loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted) / 0.8) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 2s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Professional button enhancements */
+.professional-button {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.9));
+  box-shadow: 0 4px 15px hsl(var(--primary) / 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.professional-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px hsl(var(--primary) / 0.4);
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--primary) / 0.8));
+}

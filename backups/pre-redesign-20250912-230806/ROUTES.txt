@@ -1,0 +1,27 @@
+Frontend Routes (App Router)
+
+Root and Landing
+- /            -> Redirects to /dashboard (actual app)
+- /lander      -> Public landing page with links to App and Demo
+- /welcome     -> Public welcome page
+
+Demo Mode (JSON-backed; no network calls)
+- /demo                -> Demo Dashboard
+- /demo/dashboard      -> Demo Dashboard
+- /demo/pipelines      -> Demo Pipelines list
+- /demo/pipelines/builder -> Demo Visual Pipeline Builder
+
+Authenticated App (requires login)
+- /dashboard           -> Main Dashboard (protected)
+- /pipelines           -> Pipelines list (protected)
+- /pipelines/builder   -> Visual Pipeline Builder (protected)
+- /repositories        -> Repositories (protected)
+- /settings            -> Settings (protected)
+- /animations          -> Animations demo (protected)
+
+Fallback
+- *            -> NotFound page for all unmatched routes
+
+Notes
+- Unauthenticated users navigating to protected routes are redirected to /lander.
+- Demo routes use local JSON data under src/data/demo and never call the backend.

@@ -1,0 +1,42 @@
+[
+  {
+    "name": "RustCI Production Deploy",
+    "description": "Production deployment pipeline for RustCI with comprehensive testing and monitoring",
+    "status": "success",
+    "lastRun": "2 minutes ago",
+    "repository": "RustCI/production",
+    "branch": "main",
+    "totalRuns": 120,
+    "successRate": "96.2%"
+  },
+  {
+    "name": "Frontend Build & Test",
+    "description": "React TypeScript frontend with comprehensive test suite and build optimization",
+    "status": "running",
+    "lastRun": "5 minutes ago",
+    "repository": "RustCI/frontend",
+    "branch": "develop",
+    "totalRuns": 64,
+    "successRate": "91.7%"
+  },
+  {
+    "name": "API Integration Pipeline",
+    "description": "Backend API integration tests with database migrations and performance testing",
+    "status": "success",
+    "lastRun": "12 minutes ago",
+    "repository": "RustCI/backend",
+    "branch": "feature/api-v2",
+    "totalRuns": 27,
+    "successRate": "88.9%"
+  },
+  {
+    "name": "Security Audit Pipeline",
+    "description": "Automated security scanning and vulnerability assessment",
+    "status": "idle",
+    "repository": "RustCI/security",
+    "branch": "main",
+    "totalRuns": 7,
+    "successRate": "100%"
+  }
+]
+

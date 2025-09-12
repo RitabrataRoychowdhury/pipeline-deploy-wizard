@@ -23,12 +23,7 @@ import Repositories from "./pages/repositories/Repositories";
 import Settings from "./pages/settings/Settings";
 import PipelineBuilder from "./pages/pipeline-builder/PipelineBuilder";
 import NotFound from "./pages/not-found/NotFound";
-import LoginPage from "./pages/auth/LoginPage";
-import SignupPage from "./pages/auth/SignupPage";
-import OAuthCallback from "./pages/auth/OAuthCallback";
 import AnimationDemo from "./pages/animations/AnimationDemo";
-import DesignV2Layout from "./pages/design-v2/Layout";
-import DesignV2Dashboard from "./pages/design-v2/Dashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -99,24 +94,12 @@ const App = () => {
                   {/* Root shows the actual app (dashboard). Landing moved to /lander */}
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/lander" element={<PageTransition><Landing /></PageTransition>} />
-                  {/* Auth routes (unprotected) */}
-                  <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
-                  <Route path="/signup" element={<PageTransition><SignupPage /></PageTransition>} />
-                  <Route path="/auth/callback" element={<PageTransition><OAuthCallback /></PageTransition>} />
                   {/* Demo mode: all URLs under /demo, uses local JSON only */}
                   <Route path="/demo" element={<PageTransition><DemoDashboard /></PageTransition>} />
                   <Route path="/demo/dashboard" element={<PageTransition><DemoDashboard /></PageTransition>} />
                   <Route path="/demo/pipelines" element={<PageTransition><DemoPipelines /></PageTransition>} />
                   <Route path="/demo/pipelines/builder" element={<PageTransition><DemoPipelineBuilder /></PageTransition>} />
                   <Route path="/welcome" element={<PageTransition><Welcome /></PageTransition>} />
-                  {/* Design v2 routes */}
-                  <Route path="/design-v2" element={
-                    <ProtectedRoute>
-                      <PageTransition><DesignV2Layout /></PageTransition>
-                    </ProtectedRoute>
-                  }>
-                    <Route path="dashboard" element={<DesignV2Dashboard />} />
-                  </Route>
                   <Route path="/dashboard" element={
                     <ProtectedRoute>
                       <PageTransition><Dashboard /></PageTransition>
