@@ -6,7 +6,7 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-import { PipelineBuilderNew } from "@/pages/PipelineBuilderNew";
+import { PipelineBuilderNew } from "@/pages/pipeline-builder/PipelineBuilderNew";
 import DemoNavbar from "@/components/DemoNavbar";
 
 export default function DemoPipelineBuilderPage() {
@@ -66,4 +66,3 @@ export default function DemoPipelineBuilderPage() {
     </div>
   );
 }
-

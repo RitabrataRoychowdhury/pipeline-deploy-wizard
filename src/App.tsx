@@ -11,20 +11,19 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { initializeBrowserCompatibility } from "@/lib/browser-compatibility";
 import { initializeAccessibility } from "@/lib/accessibility";
-import Index from "./pages/Index";
-import Landing from "./pages/landing page/Landing";
+import Landing from "./pages/landing/Landing";
 // Demo-mode pages (JSON-backed, no network)
-import DemoDashboard from "./pages/demo/Dashboard";
-import DemoPipelines from "./pages/demo/Pipelines";
-import DemoPipelineBuilder from "./pages/demo/PipelineBuilder";
-import Welcome from "./pages/Welcome";
-import Dashboard from "./pages/Dashboard";
-import Pipelines from "./pages/Pipelines";
-import Repositories from "./pages/Repositories";
-import Settings from "./pages/Settings";
-import PipelineBuilder from "./pages/PipelineBuilder";
-import NotFound from "./pages/NotFound";
-import AnimationDemo from "./components/AnimationDemo";
+import DemoDashboard from "./pages/demo/dashboard/Dashboard";
+import DemoPipelines from "./pages/demo/pipelines/Pipelines";
+import DemoPipelineBuilder from "./pages/demo/pipeline-builder/PipelineBuilder";
+import Welcome from "./pages/welcome/Welcome";
+import Dashboard from "./pages/dashboard/Dashboard";
+import Pipelines from "./pages/pipelines/Pipelines";
+import Repositories from "./pages/repositories/Repositories";
+import Settings from "./pages/settings/Settings";
+import PipelineBuilder from "./pages/pipeline-builder/PipelineBuilder";
+import NotFound from "./pages/not-found/NotFound";
+import AnimationDemo from "./pages/animations/AnimationDemo";
 
 const queryClient = new QueryClient({
   defaultOptions: {

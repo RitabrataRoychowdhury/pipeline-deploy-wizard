@@ -282,6 +282,17 @@ All colors MUST be HSL for consistency and theme switching
 }
 
 /* ==================== ENTERPRISE ANIMATIONS ==================== */
+/* Grain overlay utility for hero/gradient sections */
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.9; /* subtle by default */
+  mix-blend-mode: overlay; /* or soft-light/multiply based on taste */
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PGZpbHRlciBpZD0ibiI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iNCIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==");
+  background-repeat: repeat;
+  background-size: 200px 200px; /* tile size */
+}
 
 /* Performance-optimized animation keyframes */
 @keyframes slideInRight {

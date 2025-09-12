@@ -5,7 +5,7 @@ import PipelineCard from "@/components/PipelineCard";
 import StatsCard from "@/components/StatsCard";
 import RecentBuilds from "@/components/RecentBuilds";
 import { Safe3DScene } from "@/components/3d/Safe3DScene";
-import { WaitlistManager, addToRustCIWaitlist } from "@/components/WaitlistManager";
+import { WaitlistManager, addToRustCIWaitlist } from "@/pages/index/components/WaitlistManager";
 import { Activity, GitBranch, CheckCircle, Clock, Plus, Rocket, Shield, Zap, Users, ArrowRight, Star, Github, Twitter, Mail, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

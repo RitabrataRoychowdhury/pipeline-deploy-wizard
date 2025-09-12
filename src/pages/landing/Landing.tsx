@@ -75,6 +75,8 @@ const Hero = () => {
       
       {/* Subtle mesh overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-slate-500/5" />
+      {/* Grain overlay */}
+      <div className="grain-overlay" />
       
       {/* Refined background elements */}
       <div className="absolute inset-0">
@@ -555,6 +557,8 @@ const CallToAction = () => {
         <div className="absolute top-0 left-1/4 w-72 h-72 md:w-96 md:h-96 bg-blue-500/8 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-72 h-72 md:w-96 md:h-96 bg-purple-500/8 rounded-full blur-3xl" />
       </div>
+      {/* Grain overlay */}
+      <div className="grain-overlay" />
       
       <div className="relative z-10 container mx-auto px-4 md:px-6 text-center text-white">
         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6">

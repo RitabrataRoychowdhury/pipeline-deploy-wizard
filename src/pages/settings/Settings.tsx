@@ -3,7 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import Navbar from "@/components/Navbar";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import NotificationHub from "@/components/NotificationHub";
+import NotificationHub from "@/pages/settings/components/NotificationHub";
 import { EnhancedCard, EnhancedCardHeader, EnhancedCardTitle, EnhancedCardContent } from "@/components/ui/enhanced-card";
 import { 
   Settings as SettingsIcon, 

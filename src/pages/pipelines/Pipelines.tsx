@@ -5,7 +5,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import Navbar from "@/components/Navbar";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import PipelineCard from "@/components/PipelineCard";
-import CreatePipelineDialog from "@/components/CreatePipelineDialog";
+import CreatePipelineDialog from "@/pages/pipelines/components/CreatePipelineDialog";
 import StatsCard from "@/components/StatsCard";
 import { Activity, GitBranch, CheckCircle, Clock, Play, Pause, RotateCcw, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
