@@ -19,6 +19,7 @@ import Pipelines from "./pages/Pipelines";
 import Repositories from "./pages/Repositories";
 import Settings from "./pages/Settings";
 import PipelineBuilder from "./pages/PipelineBuilder";
+import PipelineExecution from "./pages/PipelineExecution";
 import NotFound from "./pages/NotFound";
 import AnimationDemo from "./components/AnimationDemo";
 
@@ -103,6 +104,11 @@ const App = () => {
                   <Route path="/pipelines/builder" element={
                     <ProtectedRoute>
                       <PageTransition><PipelineBuilder /></PageTransition>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/pipelines/:id/execution" element={
+                    <ProtectedRoute>
+                      <PageTransition><PipelineExecution /></PageTransition>
                     </ProtectedRoute>
                   } />
                   <Route path="/repositories" element={

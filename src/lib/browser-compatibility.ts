@@ -139,8 +139,9 @@ export const polyfills = {
     if (!('IntersectionObserver' in window)) {
       // Simple IntersectionObserver polyfill
       (window as any).IntersectionObserver = class {
+        private _callback: any;
         constructor(callback: any) {
-          this.callback = callback;
+          this._callback = callback;
         }
         observe() {}
         unobserve() {}
@@ -155,8 +156,9 @@ export const polyfills = {
     if (!('ResizeObserver' in window)) {
       // Simple ResizeObserver polyfill
       (window as any).ResizeObserver = class {
+        private _callback: any;
         constructor(callback: any) {
-          this.callback = callback;
+          this._callback = callback;
         }
         observe() {}
         unobserve() {}

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Node, Edge, Connection } from '@xyflow/react';
-import { AdvancedPipelineCanvas } from './AdvancedPipelineCanvas';
+import { EnhancedPipelineCanvas } from './EnhancedPipelineCanvas';
 import { AdvancedComponentPalette } from './AdvancedComponentPalette';
 import { Button } from '@/components/ui/button';
 import { LoadingButton } from '@/components/ui/loading-button';
@@ -409,7 +409,7 @@ export const ProfessionalPipelineBuilder: React.FC<ProfessionalPipelineBuilderPr
             <div className="flex items-center gap-1">
               <ActionButton
                 action="custom"
-                onAction={handleValidate}
+                onAction={() => { handleValidate(); }}
                 variant="ghost"
                 size="sm"
                 className="h-8 px-3 text-sm"
@@ -521,7 +521,7 @@ export const ProfessionalPipelineBuilder: React.FC<ProfessionalPipelineBuilderPr
 
         {/* Canvas */}
         <div className="flex-1 relative">
-          <AdvancedPipelineCanvas
+          <EnhancedPipelineCanvas
             nodes={nodes}
             edges={edges}
             onNodesChange={handleNodesChange}

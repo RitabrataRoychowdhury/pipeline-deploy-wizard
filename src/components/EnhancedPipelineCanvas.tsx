@@ -19,8 +19,6 @@ import {
   SelectionMode,
   Panel,
   useOnSelectionChange,
-  getRectOfNodes,
-  getTransformForBounds,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { PipelineNode } from './PipelineNode';
@@ -210,9 +208,7 @@ const EnhancedPipelineCanvasInternal: React.FC<EnhancedPipelineCanvasProps> = ({
     getViewport,
     getNodes,
     getEdges,
-    getZoom,
-    project,
-    flowToScreenPosition
+    getZoom
   } = useReactFlow();
 
   // Custom node and edge types

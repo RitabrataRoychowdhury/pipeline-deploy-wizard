@@ -164,9 +164,14 @@ export default function Landing() {
     navigate('/dashboard');
   };
 
+  const bgImages = getBackgroundImage('landing');
+  const images = typeof bgImages === 'string' 
+    ? { mobile: bgImages, tablet: bgImages, desktop: bgImages }
+    : { mobile: bgImages.desktop || '', tablet: bgImages.desktop || '', desktop: bgImages.desktop || '' };
+  
   return (
     <ResponsiveBackgroundImage
-      images={getBackgroundImage('landing')}
+      images={images}
       alt="Professional CI/CD platform background with geometric patterns"
       className="min-h-screen"
       overlayClassName="bg-gradient-to-br from-slate-900/85 via-blue-900/70 to-slate-900/85"

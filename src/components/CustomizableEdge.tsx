@@ -28,7 +28,7 @@ import {
   Shuffle
 } from 'lucide-react';
 
-export interface CustomEdgeData {
+export interface CustomEdgeData extends Record<string, unknown> {
   label?: string;
   edgeType: 'default' | 'conditional' | 'parallel' | 'loop' | 'error' | 'success';
   condition?: string;

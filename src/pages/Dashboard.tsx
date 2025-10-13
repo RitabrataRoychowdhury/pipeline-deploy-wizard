@@ -5,6 +5,7 @@ import PipelineCard from "@/components/PipelineCard";
 import StatsCard from "@/components/StatsCard";
 import RecentBuilds from "@/components/RecentBuilds";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { BuildTriggerLoader } from "@/components/BuildTriggerLoader";
 import { Activity, GitBranch, CheckCircle, Clock, Plus, TrendingUp, Server, Zap, Settings, Filter, BarChart3, Users, Globe, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -63,36 +64,27 @@ const Dashboard = () => {
   ]);
 
   const { toast } = useToast();
-
-
-
+  const [showBuildLoader, setShowBuildLoader] = useState(false);
+  const [triggeringPipeline, setTriggeringPipeline] = useState<string | null>(null);
   const handleTriggerPipeline = async (pipelineName: string) => {
-    // Update pipeline status to running
-    setPipelines(prev => prev.map(p => 
-      p.name === pipelineName 
-        ? { ...p, status: "running" as const }
-        : p
-    ));
+    // Show build trigger loader
+    setTriggeringPipeline(pipelineName);
+    setShowBuildLoader(true);
+  };
 
-    // Simulate pipeline execution
+  const handleBuildLoaderComplete = () => {
+    // Navigate to execution page
     setTimeout(() => {
-      const success = Math.random() > 0.2; // 80% success rate
-      setPipelines(prev => prev.map(p => 
-        p.name === pipelineName 
-          ? { 
-              ...p, 
-              status: success ? "success" as const : "failed" as const,
-              lastRun: "just now"
-            }
-          : p
-      ));
-
+      setShowBuildLoader(false);
+      navigate(`/pipelines/42/execution`);
+      
       toast({
-        title: success ? "Pipeline Completed Successfully" : "Pipeline Failed",
-        description: `${pipelineName} ${success ? "executed successfully with all tests passing" : "failed during execution - check logs for details"}.`,
-        variant: success ? "default" : "destructive",
+        title: "Pipeline Started",
+        description: `${triggeringPipeline} is now running`,
       });
-    }, 5000);
+      
+      setTriggeringPipeline(null);
+    }, 300);
   };
 
   const stats = {
@@ -403,6 +395,12 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Build Trigger Loader */}
+      <BuildTriggerLoader 
+        isVisible={showBuildLoader} 
+        onComplete={handleBuildLoaderComplete}
+      />
     </div>
   );
 };

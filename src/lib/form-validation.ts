@@ -118,9 +118,13 @@ export const validateField = <T>(schema: z.ZodSchema<T>, value: unknown): {
 export const useFormValidation = <T>(schema: z.ZodSchema<T>) => {
   const validate = (data: unknown) => validateForm(schema, data);
   const validateSingle = (field: keyof T, value: unknown) => {
-    const fieldSchema = schema.shape[field as string];
-    if (fieldSchema) {
-      return validateField(fieldSchema, value);
+    try {
+      const fieldSchema = (schema as any).shape?.[field as string];
+      if (fieldSchema) {
+        return validateField(fieldSchema, value);
+      }
+    } catch {
+      // Field schema not available
     }
     return { success: true };
   };

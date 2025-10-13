@@ -18,7 +18,8 @@ import {
   Star,
   Clock
 } from 'lucide-react';
-import { componentDefinitions, ComponentDefinition, ComponentCategory } from '@/lib/component-definitions';
+import { componentDefinitions } from '@/lib/component-definitions';
+import { ComponentDefinition, ComponentCategory } from '@/lib/pipeline-utils';
 
 interface AdvancedComponentPaletteProps {
   isOpen: boolean;
