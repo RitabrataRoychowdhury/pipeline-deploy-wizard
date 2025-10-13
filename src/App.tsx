@@ -1,16 +1,13 @@
-import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { PageTransition } from "@/components/PageTransition";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { initializeBrowserCompatibility } from "@/lib/browser-compatibility";
-import { initializeAccessibility } from "@/lib/accessibility";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Welcome from "./pages/Welcome";
@@ -46,34 +43,6 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  useEffect(() => {
-    // Initialize browser compatibility and accessibility features
-    const initializeApp = async () => {
-      try {
-        // Initialize browser compatibility
-        await initializeBrowserCompatibility();
-        
-        // Initialize accessibility features
-        initializeAccessibility();
-        
-        // Set up global error handling
-        window.addEventListener('unhandledrejection', (event) => {
-          console.error('Unhandled promise rejection:', event.reason);
-          // You could send this to an error reporting service
-        });
-
-        window.addEventListener('error', (event) => {
-          console.error('Global error:', event.error);
-          // You could send this to an error reporting service
-        });
-      } catch (error) {
-        console.error('Failed to initialize app:', error);
-      }
-    };
-
-    initializeApp();
-  }, []);
-
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
