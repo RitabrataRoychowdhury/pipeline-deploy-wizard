@@ -61,14 +61,11 @@ const mockSteps: PipelineStep[] = [
   {
     id: '1',
     name: 'Clone Repository',
-    status: 'success',
-    startTime: '2024-01-15T10:00:00Z',
-    endTime: '2024-01-15T10:00:03Z',
-    duration: 3200,
+    status: 'running',
+    startTime: new Date().toISOString(),
+    duration: 0,
     logs: [
-      { timestamp: '10:00:00', level: 'info', message: 'Initializing git clone...' },
-      { timestamp: '10:00:01', level: 'info', message: 'Cloning from https://github.com/user/repo.git' },
-      { timestamp: '10:00:02', level: 'success', message: 'Repository cloned successfully' },
+      { timestamp: new Date().toTimeString().split(' ')[0], level: 'info', message: 'Initializing git clone...' },
     ],
     metrics: {
       cpuUsage: 15,
@@ -82,43 +79,28 @@ const mockSteps: PipelineStep[] = [
   {
     id: '2',
     name: 'Install Dependencies',
-    status: 'success',
-    startTime: '2024-01-15T10:00:04Z',
-    endTime: '2024-01-15T10:00:18Z',
-    duration: 14500,
-    logs: [
-      { timestamp: '10:00:04', level: 'info', message: 'Running npm install...' },
-      { timestamp: '10:00:05', level: 'info', message: 'Fetching packages from registry' },
-      { timestamp: '10:00:12', level: 'warning', message: '2 packages have security vulnerabilities' },
-      { timestamp: '10:00:18', level: 'success', message: 'Dependencies installed successfully' },
-    ],
+    status: 'pending',
+    logs: [],
     metrics: {
-      cpuUsage: 45,
-      memoryUsage: 512,
-      networkIO: 2048,
-      diskIO: 1024,
-      kernelBypass: true,
-      deploymentRoundtrip: 120,
+      cpuUsage: 0,
+      memoryUsage: 0,
+      networkIO: 0,
+      diskIO: 0,
+      kernelBypass: false,
+      deploymentRoundtrip: 0,
     },
   },
   {
     id: '3',
     name: 'Run Tests',
-    status: 'running',
-    startTime: '2024-01-15T10:00:19Z',
-    duration: 0,
-    logs: [
-      { timestamp: '10:00:19', level: 'info', message: 'Starting test suite...' },
-      { timestamp: '10:00:20', level: 'info', message: 'Running unit tests...' },
-      { timestamp: '10:00:25', level: 'info', message: '✓ 45 tests passed' },
-      { timestamp: '10:00:26', level: 'info', message: 'Running integration tests...' },
-    ],
+    status: 'pending',
+    logs: [],
     metrics: {
-      cpuUsage: 78,
-      memoryUsage: 768,
-      networkIO: 128,
-      diskIO: 256,
-      kernelBypass: true,
+      cpuUsage: 0,
+      memoryUsage: 0,
+      networkIO: 0,
+      diskIO: 0,
+      kernelBypass: false,
       deploymentRoundtrip: 0,
     },
   },
@@ -160,34 +142,74 @@ export const PipelineExecution: React.FC = () => {
   const [autoScroll, setAutoScroll] = useState(true);
   const logScrollRef = React.useRef<HTMLDivElement>(null);
 
-  // Simulate real-time updates
+  // Step durations in seconds (total ~5 minutes)
+  const stepDurations = [10, 40, 80, 100, 70]; // Total: 300 seconds (5 minutes)
+  const [startTime] = useState(Date.now());
+
+  // Simulate real-time updates and step progression
   useEffect(() => {
     const interval = setInterval(() => {
       setSteps((prev) => {
         const updated = [...prev];
-        const runningStep = updated.find((s) => s.status === 'running');
+        const elapsed = (Date.now() - startTime) / 1000; // seconds elapsed
         
-        if (runningStep) {
-          // Add new log entries
-          runningStep.logs.push({
-            timestamp: new Date().toTimeString().split(' ')[0],
-            level: Math.random() > 0.9 ? 'warning' : 'info',
-            message: getRandomLogMessage(),
-          });
-
-          // Update metrics
-          runningStep.metrics.cpuUsage = Math.min(100, runningStep.metrics.cpuUsage + Math.random() * 10 - 5);
-          runningStep.metrics.memoryUsage += Math.random() * 32 - 16;
-          runningStep.metrics.networkIO += Math.random() * 100;
-          runningStep.metrics.diskIO += Math.random() * 50;
-        }
+        let cumulativeTime = 0;
+        updated.forEach((step, index) => {
+          const stepDuration = stepDurations[index];
+          const stepStartTime = cumulativeTime;
+          const stepEndTime = cumulativeTime + stepDuration;
+          
+          if (elapsed < stepStartTime) {
+            // Step hasn't started yet
+            step.status = 'pending';
+          } else if (elapsed >= stepStartTime && elapsed < stepEndTime) {
+            // Step is running
+            step.status = 'running';
+            if (!step.startTime) {
+              step.startTime = new Date(startTime + stepStartTime * 1000).toISOString();
+            }
+            step.duration = (elapsed - stepStartTime) * 1000;
+            
+            // Add log entries periodically
+            if (step.logs.length < (elapsed - stepStartTime) / 2) {
+              step.logs.push({
+                timestamp: new Date().toTimeString().split(' ')[0],
+                level: Math.random() > 0.9 ? 'warning' : Math.random() > 0.95 ? 'success' : 'info',
+                message: getRandomLogMessage(step.name),
+              });
+            }
+            
+            // Update metrics
+            const progress = (elapsed - stepStartTime) / stepDuration;
+            step.metrics.cpuUsage = 20 + Math.sin(progress * Math.PI) * 50 + Math.random() * 10;
+            step.metrics.memoryUsage = 256 + progress * 512 + Math.random() * 50;
+            step.metrics.networkIO = Math.random() * 200;
+            step.metrics.diskIO = Math.random() * 100;
+            step.metrics.kernelBypass = true;
+            step.metrics.deploymentRoundtrip = 10 + Math.random() * 40;
+          } else {
+            // Step completed
+            step.status = 'success';
+            if (!step.endTime) {
+              step.endTime = new Date(startTime + stepEndTime * 1000).toISOString();
+              step.duration = stepDuration * 1000;
+              step.logs.push({
+                timestamp: new Date().toTimeString().split(' ')[0],
+                level: 'success',
+                message: `${step.name} completed successfully!`,
+              });
+            }
+          }
+          
+          cumulativeTime += stepDuration;
+        });
 
         return updated;
       });
-    }, 1000);
+    }, 500); // Update every 500ms for smoother progress
 
     return () => clearInterval(interval);
-  }, []);
+  }, [startTime]);
 
   // Auto-scroll logs
   useEffect(() => {
@@ -448,17 +470,48 @@ const HealthIndicator: React.FC<{
   </div>
 );
 
-function getRandomLogMessage(): string {
-  const messages = [
-    'Processing test suite...',
-    'Running test case #45',
-    'Executing integration tests',
-    'Verifying component rendering',
-    'Testing API endpoints',
-    'Checking authentication flow',
-    'Validating database queries',
-    'Running performance tests',
-  ];
+function getRandomLogMessage(stepName: string): string {
+  const messagesByStep: Record<string, string[]> = {
+    'Clone Repository': [
+      'Cloning from remote repository...',
+      'Fetching branches and tags...',
+      'Checking out main branch...',
+      'Repository cloned successfully',
+    ],
+    'Install Dependencies': [
+      'Resolving package dependencies...',
+      'Downloading packages from registry...',
+      'Installing node modules...',
+      'Building native extensions...',
+      'Cleaning up cache...',
+    ],
+    'Run Tests': [
+      'Starting test suite...',
+      'Running unit tests...',
+      '✓ Authentication tests passed',
+      '✓ API integration tests passed',
+      '✓ Component rendering tests passed',
+      'Running e2e tests...',
+      'All tests completed',
+    ],
+    'Build Application': [
+      'Compiling TypeScript...',
+      'Bundling assets...',
+      'Optimizing images...',
+      'Generating production build...',
+      'Minifying JavaScript...',
+      'Creating source maps...',
+    ],
+    'Deploy to Production': [
+      'Uploading build artifacts...',
+      'Configuring CDN...',
+      'Updating DNS records...',
+      'Running health checks...',
+      'Deployment successful!',
+    ],
+  };
+  
+  const messages = messagesByStep[stepName] || ['Processing...'];
   return messages[Math.floor(Math.random() * messages.length)];
 }
 
