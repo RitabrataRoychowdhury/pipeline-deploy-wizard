@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { AnalyticsChart } from "@/components/AnalyticsChart";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import dashboardBg from "@/assets/dashboard-bg.png";
 
 interface Pipeline {
   name: string;
@@ -66,10 +67,19 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [showBuildLoader, setShowBuildLoader] = useState(false);
   const [triggeringPipeline, setTriggeringPipeline] = useState<string | null>(null);
+  
   const handleTriggerPipeline = async (pipelineName: string) => {
     // Show build trigger loader
     setTriggeringPipeline(pipelineName);
     setShowBuildLoader(true);
+  };
+
+  const handleConfigurePipeline = (pipelineName: string) => {
+    navigate("/pipelines/builder");
+    toast({
+      title: "Configure Pipeline",
+      description: `Opening configuration for ${pipelineName}`,
+    });
   };
 
   const handleBuildLoaderComplete = () => {
@@ -99,10 +109,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 relative overflow-hidden">
-      {/* Professional background patterns */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.05),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(var(--success)/0.03),transparent_50%)]" />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${dashboardBg})` }}
+      />
+      {/* Overlay for better readability */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/95" />
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       
       <Navbar />
@@ -319,6 +333,7 @@ const Dashboard = () => {
                   repository={pipeline.repository}
                   branch={pipeline.branch}
                   onTrigger={() => handleTriggerPipeline(pipeline.name)}
+                  onConfigure={() => handleConfigurePipeline(pipeline.name)}
                 />
               ))}
             </div>

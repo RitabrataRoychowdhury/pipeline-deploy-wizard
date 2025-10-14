@@ -11,6 +11,7 @@ interface PipelineCardProps {
   repository?: string;
   branch?: string;
   onTrigger: () => void;
+  onConfigure?: () => void;
 }
 
 const PipelineCard = ({ 
@@ -20,7 +21,8 @@ const PipelineCard = ({
   lastRun, 
   repository = "RustCI", 
   branch = "main",
-  onTrigger 
+  onTrigger,
+  onConfigure
 }: PipelineCardProps) => {
   const getStatusIcon = () => {
     switch (status) {
@@ -160,7 +162,12 @@ const PipelineCard = ({
             {status === "running" ? "Running..." : "Trigger Build"}
           </Button>
           
-          <Button variant="outline" size="sm" className="h-10 px-4 hover:bg-muted/50 hover:border-primary/30 transition-all duration-200">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onConfigure}
+            className="h-10 px-4 hover:bg-muted/50 hover:border-primary/30 transition-all duration-200"
+          >
             <Settings className="h-4 w-4 mr-2" />
             Configure
           </Button>
