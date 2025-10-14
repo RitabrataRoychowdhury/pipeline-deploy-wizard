@@ -33,8 +33,19 @@ export const BuildTriggerLoader: React.FC<BuildTriggerLoaderProps> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-      <div className="relative">
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-sm overflow-hidden" 
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0,
+        margin: 0,
+        padding: 0
+      }}
+    >
+      <div className="relative flex items-center justify-center min-h-screen w-full">
         {/* Animated rings */}
         <div className="absolute inset-0 -m-20">
           <div className={cn(
