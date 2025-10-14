@@ -11,7 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Welcome from "./pages/Welcome";
-import Dashboard from "./pages/Dashboard";
+import DashboardClean from "./pages/DashboardClean";
 import Pipelines from "./pages/Pipelines";
 import Repositories from "./pages/Repositories";
 import Settings from "./pages/Settings";
@@ -62,7 +62,7 @@ const App = () => {
                   <Route path="/welcome" element={<PageTransition><Welcome /></PageTransition>} />
                   <Route path="/dashboard" element={
                     <ProtectedRoute>
-                      <PageTransition><Dashboard /></PageTransition>
+                      <PageTransition><DashboardClean /></PageTransition>
                     </ProtectedRoute>
                   } />
                   <Route path="/pipelines" element={

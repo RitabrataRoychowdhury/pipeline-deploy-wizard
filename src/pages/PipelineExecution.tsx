@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
+import { PipelineGraphView } from '@/components/PipelineGraphView';
 import {
   ArrowLeft,
   CheckCircle,
@@ -28,6 +29,8 @@ import {
   ChevronUp,
   PlayCircle,
   AlertTriangle,
+  LayoutList,
+  GitMerge,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -138,8 +141,9 @@ export const PipelineExecution: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [steps, setSteps] = useState<PipelineStep[]>(mockSteps);
-  const [selectedStep, setSelectedStep] = useState<string>('3');
+  const [selectedStep, setSelectedStep] = useState<string>('1');
   const [autoScroll, setAutoScroll] = useState(true);
+  const [viewMode, setViewMode] = useState<'timeline' | 'graph'>('timeline');
   const logScrollRef = React.useRef<HTMLDivElement>(null);
 
   // Step durations in seconds (total ~5 minutes)
@@ -270,10 +274,34 @@ export const PipelineExecution: React.FC = () => {
               </div>
             </div>
 
-            <Badge variant="secondary" className="text-lg px-4 py-2">
-              <PlayCircle className="h-4 w-4 mr-2" />
-              In Progress
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-lg px-4 py-2">
+                <PlayCircle className="h-4 w-4 mr-2" />
+                In Progress
+              </Badge>
+              
+              {/* View Mode Toggle */}
+              <div className="flex gap-1 bg-muted rounded-lg p-1">
+                <Button
+                  variant={viewMode === 'timeline' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('timeline')}
+                  className="h-8"
+                >
+                  <LayoutList className="h-4 w-4 mr-2" />
+                  Timeline
+                </Button>
+                <Button
+                  variant={viewMode === 'graph' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('graph')}
+                  className="h-8"
+                >
+                  <GitMerge className="h-4 w-4 mr-2" />
+                  Graph
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Progress Bar */}
@@ -290,46 +318,59 @@ export const PipelineExecution: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-4 py-6">
+        {/* Graph View */}
+        {viewMode === 'graph' && (
+          <div className="mb-6">
+            <PipelineGraphView 
+              steps={steps} 
+              selectedStep={selectedStep}
+              onStepClick={setSelectedStep}
+            />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Steps Timeline */}
-          <div className="lg:col-span-4">
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Pipeline Steps</h2>
-              <div className="space-y-1">
-                {steps.map((step, index) => (
-                  <button
-                    key={step.id}
-                    onClick={() => setSelectedStep(step.id)}
-                    className={cn(
-                      "w-full text-left p-3 rounded-lg transition-all duration-200",
-                      "hover:bg-accent/50 flex items-center gap-3",
-                      selectedStep === step.id && "bg-accent"
-                    )}
-                  >
-                    <div className="flex-shrink-0">{getStepIcon(step.status)}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-medium truncate">{step.name}</span>
-                        {step.duration && (
-                          <span className="text-xs text-muted-foreground">
-                            {(step.duration / 1000).toFixed(1)}s
-                          </span>
+          {viewMode === 'timeline' && (
+            <div className="lg:col-span-4">
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Pipeline Steps</h2>
+                <div className="space-y-1">
+                  {steps.map((step, index) => (
+                    <button
+                      key={step.id}
+                      onClick={() => setSelectedStep(step.id)}
+                      className={cn(
+                        "w-full text-left p-3 rounded-lg transition-all duration-200",
+                        "hover:bg-accent/50 flex items-center gap-3",
+                        selectedStep === step.id && "bg-accent"
+                      )}
+                    >
+                      <div className="flex-shrink-0">{getStepIcon(step.status)}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium truncate">{step.name}</span>
+                          {step.duration && (
+                            <span className="text-xs text-muted-foreground">
+                              {(step.duration / 1000).toFixed(1)}s
+                            </span>
+                          )}
+                        </div>
+                        {step.status === 'running' && (
+                          <div className="mt-1">
+                            <Progress value={45} className="h-1" />
+                          </div>
                         )}
                       </div>
-                      {step.status === 'running' && (
-                        <div className="mt-1">
-                          <Progress value={45} className="h-1" />
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </Card>
-          </div>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
 
           {/* Logs and Metrics */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className={cn("space-y-6", viewMode === 'timeline' ? "lg:col-span-8" : "lg:col-span-12")}>
             {/* Real-time Metrics */}
             <Card className="p-6">
               <h2 className="text-lg font-semibold mb-4">Real-time Metrics</h2>

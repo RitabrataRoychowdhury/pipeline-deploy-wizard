@@ -7,6 +7,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import PipelineCard from "@/components/PipelineCard";
 import CreatePipelineDialog from "@/components/CreatePipelineDialog";
 import StatsCard from "@/components/StatsCard";
+import { BuildTriggerLoader } from "@/components/BuildTriggerLoader";
 import { Activity, GitBranch, CheckCircle, Clock, Play, Pause, RotateCcw, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,73 +71,30 @@ const Pipelines = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [showBuildLoader, setShowBuildLoader] = useState(false);
+  const [triggeringPipeline, setTriggeringPipeline] = useState<string | null>(null);
 
   const { toast } = useToast();
 
   const handleTriggerPipeline = async (pipelineName: string) => {
-    setPipelines(prev => prev.map(p => 
-      p.name === pipelineName 
-        ? { ...p, status: "running" as const }
-        : p
-    ));
+    // Show build trigger loader
+    setTriggeringPipeline(pipelineName);
+    setShowBuildLoader(true);
+  };
 
-    try {
-      // For demo purposes, use a hardcoded pipeline ID
-      // In a real app, you'd store the pipeline ID when creating it
-      const pipelineId = "07566ad7-ddcb-4573-9507-9af7304de812";
-
-      // Send trigger request to backend
-      const response = await fetch(`http://localhost:8000/api/ci/pipelines/${pipelineId}/trigger`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          trigger_type: "manual",
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log("Pipeline triggered:", result);
-
-      // Simulate pipeline execution completion
-      setTimeout(() => {
-        const success = Math.random() > 0.3;
-        setPipelines(prev => prev.map(p => 
-          p.name === pipelineName 
-            ? { 
-                ...p, 
-                status: success ? "success" as const : "failed" as const,
-                lastRun: "just now",
-                totalRuns: p.totalRuns + 1
-              }
-            : p
-        ));
-
-        toast({
-          title: success ? "Pipeline Completed" : "Pipeline Failed",
-          description: `${pipelineName} ${success ? "completed successfully" : "failed during execution"}.`,
-          variant: success ? "default" : "destructive",
-        });
-      }, 3000);
-    } catch (error) {
-      console.error("Error triggering pipeline:", error);
-      setPipelines(prev => prev.map(p => 
-        p.name === pipelineName 
-          ? { ...p, status: "failed" as const, lastRun: "just now" }
-          : p
-      ));
-
+  const handleBuildLoaderComplete = () => {
+    // Navigate to execution page
+    setTimeout(() => {
+      setShowBuildLoader(false);
+      navigate(`/pipelines/42/execution`);
+      
       toast({
-        title: "Pipeline failed",
-        description: "Failed to trigger pipeline. Please try again.",
-        variant: "destructive",
+        title: "Pipeline Started",
+        description: `${triggeringPipeline} is now running`,
       });
-    }
+      
+      setTriggeringPipeline(null);
+    }, 300);
   };
 
   const handlePipelineCreate = (newPipeline: any) => {
@@ -175,6 +133,7 @@ const Pipelines = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <BuildTriggerLoader isVisible={showBuildLoader} onComplete={handleBuildLoaderComplete} />
       <Navbar />
       
       {/* Breadcrumb Navigation */}
@@ -290,6 +249,7 @@ const Pipelines = () => {
                 repository={pipeline.repository}
                 branch={pipeline.branch}
                 onTrigger={() => handleTriggerPipeline(pipeline.name)}
+                onConfigure={() => navigate("/pipelines/builder")}
               />
             ))}
           </div>
