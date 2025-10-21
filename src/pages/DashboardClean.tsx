@@ -180,20 +180,54 @@ const DashboardClean = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-semibold">Build Time Trends</h3>
-                <p className="text-sm text-muted-foreground">Average build duration over time</p>
+                <p className="text-sm text-muted-foreground">Average build duration (minutes)</p>
               </div>
               <Activity className="h-5 w-5 text-primary" />
             </div>
-            <div className="h-64 flex items-end justify-between gap-2 pt-4">
-              {[65, 72, 58, 80, 45, 52, 48, 55, 42, 38, 35, 40].map((height, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2">
+            <div className="h-64 flex items-end justify-between gap-2 pt-4 relative">
+              {[
+                { time: 5.2, month: 'Jan' },
+                { time: 4.8, month: 'Feb' },
+                { time: 6.1, month: 'Mar' },
+                { time: 4.5, month: 'Apr' },
+                { time: 5.8, month: 'May' },
+                { time: 4.2, month: 'Jun' },
+                { time: 4.9, month: 'Jul' },
+                { time: 3.8, month: 'Aug' },
+                { time: 4.3, month: 'Sep' },
+                { time: 3.6, month: 'Oct' },
+                { time: 3.2, month: 'Nov' },
+                { time: 3.5, month: 'Dec' }
+              ].map((data, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
                   <div 
-                    className="w-full bg-gradient-to-t from-primary to-primary/40 rounded-t-lg transition-all hover:from-primary hover:to-primary/60"
-                    style={{ height: `${height}%` }}
+                    className="w-full bg-gradient-to-t from-primary to-primary/40 rounded-t-lg transition-all duration-300 hover:from-primary hover:to-primary/70 hover:scale-105 hover:shadow-lg hover:shadow-primary/20 cursor-pointer"
+                    style={{ height: `${(data.time / 6.5) * 100}%` }}
                   />
-                  <span className="text-xs text-muted-foreground">{i + 1}</span>
+                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{data.month}</span>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-xl">
+                      <p className="text-xs font-semibold text-foreground whitespace-nowrap">{data.time}m</p>
+                      <p className="text-xs text-muted-foreground">{data.month}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
+            </div>
+            <div className="flex items-center justify-between pt-4 border-t border-border/50">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary">3.5m</p>
+                <p className="text-xs text-muted-foreground">Current Avg</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-success">-32%</p>
+                <p className="text-xs text-muted-foreground">vs Last Year</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-info">3.2m</p>
+                <p className="text-xs text-muted-foreground">Best Time</p>
+              </div>
             </div>
           </div>
 
@@ -206,16 +240,50 @@ const DashboardClean = () => {
               </div>
               <CheckCircle className="h-5 w-5 text-success" />
             </div>
-            <div className="h-64 flex items-end justify-between gap-2 pt-4">
-              {[95, 92, 98, 94, 97, 99, 96, 98, 99, 97, 98, 99].map((height, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2">
+            <div className="h-64 flex items-end justify-between gap-2 pt-4 relative">
+              {[
+                { rate: 94.5, month: 'Jan' },
+                { rate: 96.2, month: 'Feb' },
+                { rate: 93.8, month: 'Mar' },
+                { rate: 97.1, month: 'Apr' },
+                { rate: 95.9, month: 'May' },
+                { rate: 98.3, month: 'Jun' },
+                { rate: 97.8, month: 'Jul' },
+                { rate: 98.9, month: 'Aug' },
+                { rate: 99.2, month: 'Sep' },
+                { rate: 98.7, month: 'Oct' },
+                { rate: 99.5, month: 'Nov' },
+                { rate: 99.8, month: 'Dec' }
+              ].map((data, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
                   <div 
-                    className="w-full bg-gradient-to-t from-success to-success/40 rounded-t-lg transition-all hover:from-success hover:to-success/60"
-                    style={{ height: `${height}%` }}
+                    className="w-full bg-gradient-to-t from-success to-success/40 rounded-t-lg transition-all duration-300 hover:from-success hover:to-success/70 hover:scale-105 hover:shadow-lg hover:shadow-success/20 cursor-pointer"
+                    style={{ height: `${data.rate}%` }}
                   />
-                  <span className="text-xs text-muted-foreground">{i + 1}</span>
+                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{data.month}</span>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-xl">
+                      <p className="text-xs font-semibold text-foreground whitespace-nowrap">{data.rate}%</p>
+                      <p className="text-xs text-muted-foreground">{data.month}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
+            </div>
+            <div className="flex items-center justify-between pt-4 border-t border-border/50">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-success">99.8%</p>
+                <p className="text-xs text-muted-foreground">Current Rate</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-success">+5.3%</p>
+                <p className="text-xs text-muted-foreground">vs Last Year</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary">1,247</p>
+                <p className="text-xs text-muted-foreground">Total Builds</p>
+              </div>
             </div>
           </div>
 
@@ -224,20 +292,54 @@ const DashboardClean = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-semibold">Deployment Frequency</h3>
-                <p className="text-sm text-muted-foreground">Daily deployments</p>
+                <p className="text-sm text-muted-foreground">Daily deployments count</p>
               </div>
               <Clock className="h-5 w-5 text-info" />
             </div>
-            <div className="h-64 flex items-end justify-between gap-2 pt-4">
-              {[8, 12, 15, 11, 18, 14, 16, 20, 17, 22, 19, 24].map((height, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2">
+            <div className="h-64 flex items-end justify-between gap-2 pt-4 relative">
+              {[
+                { count: 8, month: 'Jan' },
+                { count: 12, month: 'Feb' },
+                { count: 15, month: 'Mar' },
+                { count: 11, month: 'Apr' },
+                { count: 18, month: 'May' },
+                { count: 14, month: 'Jun' },
+                { count: 16, month: 'Jul' },
+                { count: 20, month: 'Aug' },
+                { count: 17, month: 'Sep' },
+                { count: 22, month: 'Oct' },
+                { count: 19, month: 'Nov' },
+                { count: 24, month: 'Dec' }
+              ].map((data, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
                   <div 
-                    className="w-full bg-gradient-to-t from-info to-info/40 rounded-t-lg transition-all hover:from-info hover:to-info/60"
-                    style={{ height: `${(height / 24) * 100}%` }}
+                    className="w-full bg-gradient-to-t from-info to-info/40 rounded-t-lg transition-all duration-300 hover:from-info hover:to-info/70 hover:scale-105 hover:shadow-lg hover:shadow-info/20 cursor-pointer"
+                    style={{ height: `${(data.count / 24) * 100}%` }}
                   />
-                  <span className="text-xs text-muted-foreground">{i + 1}</span>
+                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{data.month}</span>
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-xl">
+                      <p className="text-xs font-semibold text-foreground whitespace-nowrap">{data.count} deploys</p>
+                      <p className="text-xs text-muted-foreground">{data.month}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
+            </div>
+            <div className="flex items-center justify-between pt-4 border-t border-border/50">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-info">24</p>
+                <p className="text-xs text-muted-foreground">This Month</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-success">+200%</p>
+                <p className="text-xs text-muted-foreground">vs Last Year</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary">16.3</p>
+                <p className="text-xs text-muted-foreground">Monthly Avg</p>
+              </div>
             </div>
           </div>
 
