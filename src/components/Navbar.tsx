@@ -72,17 +72,6 @@ const Navbar = () => {
                 Repositories
               </Link>
             </Button>
-            <Button 
-              asChild
-              variant="ghost" 
-              size="sm" 
-              className={isActive("/animations") ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"}
-            >
-              <Link to="/animations">
-                <Activity className="h-4 w-4 mr-2" />
-                Animations
-              </Link>
-            </Button>
           </div>
         </div>
 
