@@ -6,6 +6,7 @@ import StatsCard from "@/components/StatsCard";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { BuildTriggerLoader } from "@/components/BuildTriggerLoader";
 import { Activity, GitBranch, CheckCircle, Clock, Plus } from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Line, LineChart } from "recharts";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -184,36 +185,35 @@ const DashboardClean = () => {
               </div>
               <Activity className="h-5 w-5 text-primary" />
             </div>
-            <div className="h-64 flex items-end justify-between gap-2 pt-4 relative">
-              {[
-                { time: 5.2, month: 'Jan' },
-                { time: 4.8, month: 'Feb' },
-                { time: 6.1, month: 'Mar' },
-                { time: 4.5, month: 'Apr' },
-                { time: 5.8, month: 'May' },
-                { time: 4.2, month: 'Jun' },
-                { time: 4.9, month: 'Jul' },
-                { time: 3.8, month: 'Aug' },
-                { time: 4.3, month: 'Sep' },
-                { time: 3.6, month: 'Oct' },
-                { time: 3.2, month: 'Nov' },
-                { time: 3.5, month: 'Dec' }
-              ].map((data, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
-                  <div 
-                    className="w-full bg-gradient-to-t from-primary to-primary/40 rounded-t-lg transition-all duration-300 hover:from-primary hover:to-primary/70 hover:scale-105 hover:shadow-lg hover:shadow-primary/20 cursor-pointer"
-                    style={{ height: `${(data.time / 6.5) * 100}%` }}
+            <div className="h-64 pt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={[
+                  { time: 5.2, month: 'Jan' },
+                  { time: 4.8, month: 'Feb' },
+                  { time: 6.1, month: 'Mar' },
+                  { time: 4.5, month: 'Apr' },
+                  { time: 5.8, month: 'May' },
+                  { time: 4.2, month: 'Jun' },
+                  { time: 4.9, month: 'Jul' },
+                  { time: 3.8, month: 'Aug' },
+                  { time: 4.3, month: 'Sep' },
+                  { time: 3.6, month: 'Oct' },
+                  { time: 3.2, month: 'Nov' },
+                  { time: 3.5, month: 'Dec' }
+                ]}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                  <XAxis dataKey="month" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
                   />
-                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{data.month}</span>
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-xl">
-                      <p className="text-xs font-semibold text-foreground whitespace-nowrap">{data.time}m</p>
-                      <p className="text-xs text-muted-foreground">{data.month}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  <Bar dataKey="time" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
             <div className="flex items-center justify-between pt-4 border-t border-border/50">
               <div className="text-center">
@@ -240,36 +240,42 @@ const DashboardClean = () => {
               </div>
               <CheckCircle className="h-5 w-5 text-success" />
             </div>
-            <div className="h-64 flex items-end justify-between gap-2 pt-4 relative">
-              {[
-                { rate: 94.5, month: 'Jan' },
-                { rate: 96.2, month: 'Feb' },
-                { rate: 93.8, month: 'Mar' },
-                { rate: 97.1, month: 'Apr' },
-                { rate: 95.9, month: 'May' },
-                { rate: 98.3, month: 'Jun' },
-                { rate: 97.8, month: 'Jul' },
-                { rate: 98.9, month: 'Aug' },
-                { rate: 99.2, month: 'Sep' },
-                { rate: 98.7, month: 'Oct' },
-                { rate: 99.5, month: 'Nov' },
-                { rate: 99.8, month: 'Dec' }
-              ].map((data, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
-                  <div 
-                    className="w-full bg-gradient-to-t from-success to-success/40 rounded-t-lg transition-all duration-300 hover:from-success hover:to-success/70 hover:scale-105 hover:shadow-lg hover:shadow-success/20 cursor-pointer"
-                    style={{ height: `${data.rate}%` }}
+            <div className="h-64 pt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={[
+                  { rate: 94.5, month: 'Jan' },
+                  { rate: 96.2, month: 'Feb' },
+                  { rate: 93.8, month: 'Mar' },
+                  { rate: 97.1, month: 'Apr' },
+                  { rate: 95.9, month: 'May' },
+                  { rate: 98.3, month: 'Jun' },
+                  { rate: 97.8, month: 'Jul' },
+                  { rate: 98.9, month: 'Aug' },
+                  { rate: 99.2, month: 'Sep' },
+                  { rate: 98.7, month: 'Oct' },
+                  { rate: 99.5, month: 'Nov' },
+                  { rate: 99.8, month: 'Dec' }
+                ]}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                  <XAxis dataKey="month" className="text-xs" />
+                  <YAxis domain={[90, 100]} className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
                   />
-                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{data.month}</span>
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-xl">
-                      <p className="text-xs font-semibold text-foreground whitespace-nowrap">{data.rate}%</p>
-                      <p className="text-xs text-muted-foreground">{data.month}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  <Line 
+                    type="monotone" 
+                    dataKey="rate" 
+                    stroke="hsl(var(--success))" 
+                    strokeWidth={3}
+                    dot={{ fill: 'hsl(var(--success))', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
             <div className="flex items-center justify-between pt-4 border-t border-border/50">
               <div className="text-center">
@@ -296,36 +302,35 @@ const DashboardClean = () => {
               </div>
               <Clock className="h-5 w-5 text-info" />
             </div>
-            <div className="h-64 flex items-end justify-between gap-2 pt-4 relative">
-              {[
-                { count: 8, month: 'Jan' },
-                { count: 12, month: 'Feb' },
-                { count: 15, month: 'Mar' },
-                { count: 11, month: 'Apr' },
-                { count: 18, month: 'May' },
-                { count: 14, month: 'Jun' },
-                { count: 16, month: 'Jul' },
-                { count: 20, month: 'Aug' },
-                { count: 17, month: 'Sep' },
-                { count: 22, month: 'Oct' },
-                { count: 19, month: 'Nov' },
-                { count: 24, month: 'Dec' }
-              ].map((data, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
-                  <div 
-                    className="w-full bg-gradient-to-t from-info to-info/40 rounded-t-lg transition-all duration-300 hover:from-info hover:to-info/70 hover:scale-105 hover:shadow-lg hover:shadow-info/20 cursor-pointer"
-                    style={{ height: `${(data.count / 24) * 100}%` }}
+            <div className="h-64 pt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={[
+                  { count: 8, month: 'Jan' },
+                  { count: 12, month: 'Feb' },
+                  { count: 15, month: 'Mar' },
+                  { count: 11, month: 'Apr' },
+                  { count: 18, month: 'May' },
+                  { count: 14, month: 'Jun' },
+                  { count: 16, month: 'Jul' },
+                  { count: 20, month: 'Aug' },
+                  { count: 17, month: 'Sep' },
+                  { count: 22, month: 'Oct' },
+                  { count: 19, month: 'Nov' },
+                  { count: 24, month: 'Dec' }
+                ]}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                  <XAxis dataKey="month" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
                   />
-                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{data.month}</span>
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-xl">
-                      <p className="text-xs font-semibold text-foreground whitespace-nowrap">{data.count} deploys</p>
-                      <p className="text-xs text-muted-foreground">{data.month}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  <Bar dataKey="count" fill="hsl(var(--info))" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
             <div className="flex items-center justify-between pt-4 border-t border-border/50">
               <div className="text-center">
