@@ -9,6 +9,7 @@ import { Activity, GitBranch, CheckCircle, Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { AnalyticsChart } from "@/components/AnalyticsChart";
 import dashboardBg from "@/assets/dashboard-bg.png";
 
 interface Pipeline {
@@ -161,29 +162,144 @@ const DashboardClean = () => {
           />
         </div>
 
-        {/* Pipelines */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Active Pipelines</h2>
-            <Button variant="outline" onClick={() => navigate("/pipelines")}>
-              View All
-            </Button>
+        {/* Analytics Charts */}
+        <div className="space-y-8">
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              System Analytics
+            </h2>
+            <p className="text-muted-foreground">Real-time performance metrics and insights</p>
           </div>
-          
-          <div className="grid gap-6">
-            {pipelines.map((pipeline, index) => (
-              <PipelineCard
-                key={index}
-                name={pipeline.name}
-                description={pipeline.description}
-                status={pipeline.status}
-                lastRun={pipeline.lastRun}
-                repository={pipeline.repository}
-                branch={pipeline.branch}
-                onTrigger={() => handleTriggerPipeline(pipeline.name)}
-                onConfigure={() => handleConfigurePipeline(pipeline.name)}
-              />
-            ))}
+          <AnalyticsChart />
+        </div>
+
+        {/* Build Performance Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Build Time Trends */}
+          <div className="bg-gradient-card border border-border/50 rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold">Build Time Trends</h3>
+                <p className="text-sm text-muted-foreground">Average build duration over time</p>
+              </div>
+              <Activity className="h-5 w-5 text-primary" />
+            </div>
+            <div className="h-64 flex items-end justify-between gap-2 pt-4">
+              {[65, 72, 58, 80, 45, 52, 48, 55, 42, 38, 35, 40].map((height, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                  <div 
+                    className="w-full bg-gradient-to-t from-primary to-primary/40 rounded-t-lg transition-all hover:from-primary hover:to-primary/60"
+                    style={{ height: `${height}%` }}
+                  />
+                  <span className="text-xs text-muted-foreground">{i + 1}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Success Rate */}
+          <div className="bg-gradient-card border border-border/50 rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold">Success Rate</h3>
+                <p className="text-sm text-muted-foreground">Build success percentage</p>
+              </div>
+              <CheckCircle className="h-5 w-5 text-success" />
+            </div>
+            <div className="h-64 flex items-end justify-between gap-2 pt-4">
+              {[95, 92, 98, 94, 97, 99, 96, 98, 99, 97, 98, 99].map((height, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                  <div 
+                    className="w-full bg-gradient-to-t from-success to-success/40 rounded-t-lg transition-all hover:from-success hover:to-success/60"
+                    style={{ height: `${height}%` }}
+                  />
+                  <span className="text-xs text-muted-foreground">{i + 1}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Deployment Frequency */}
+          <div className="bg-gradient-card border border-border/50 rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold">Deployment Frequency</h3>
+                <p className="text-sm text-muted-foreground">Daily deployments</p>
+              </div>
+              <Clock className="h-5 w-5 text-info" />
+            </div>
+            <div className="h-64 flex items-end justify-between gap-2 pt-4">
+              {[8, 12, 15, 11, 18, 14, 16, 20, 17, 22, 19, 24].map((height, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                  <div 
+                    className="w-full bg-gradient-to-t from-info to-info/40 rounded-t-lg transition-all hover:from-info hover:to-info/60"
+                    style={{ height: `${(height / 24) * 100}%` }}
+                  />
+                  <span className="text-xs text-muted-foreground">{i + 1}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* System Uptime */}
+          <div className="bg-gradient-card border border-border/50 rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold">System Uptime</h3>
+                <p className="text-sm text-muted-foreground">Service availability</p>
+              </div>
+              <Activity className="h-5 w-5 text-warning" />
+            </div>
+            <div className="h-64 flex items-center justify-center">
+              <div className="relative w-48 h-48">
+                <svg className="transform -rotate-90 w-48 h-48">
+                  <circle
+                    cx="96"
+                    cy="96"
+                    r="88"
+                    stroke="currentColor"
+                    strokeWidth="12"
+                    fill="transparent"
+                    className="text-muted/20"
+                  />
+                  <circle
+                    cx="96"
+                    cy="96"
+                    r="88"
+                    stroke="currentColor"
+                    strokeWidth="12"
+                    fill="transparent"
+                    strokeDasharray={2 * Math.PI * 88}
+                    strokeDashoffset={2 * Math.PI * 88 * (1 - 0.9997)}
+                    className="text-warning"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center flex-col">
+                  <span className="text-4xl font-bold text-warning">99.97%</span>
+                  <span className="text-sm text-muted-foreground">Uptime</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-gradient-card border border-border/50 rounded-xl p-8 text-center space-y-6">
+          <div>
+            <h3 className="text-2xl font-semibold mb-2">Manage Your Pipelines</h3>
+            <p className="text-muted-foreground">View all pipelines or create a new one to get started</p>
+          </div>
+          <div className="flex items-center justify-center gap-4">
+            <Button
+              onClick={() => navigate("/pipelines")}
+              size="lg"
+              variant="outline"
+              className="shadow-md"
+            >
+              <GitBranch className="h-5 w-5 mr-2" />
+              View All Pipelines
+            </Button>
           </div>
         </div>
       </main>
